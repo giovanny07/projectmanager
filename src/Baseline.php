@@ -3,9 +3,9 @@
 /**
  * ---------------------------------------------------------------------
  * Project Manager — Baseline
- * Línea base del cronograma: fechas planificadas originales por tarea,
- * capturadas explícitamente por el usuario, comparadas contra el plan
- * actual (que se mueve con la cascada de TaskDependency).
+ * Schedule baseline: original planned dates per task, captured
+ * explicitly by the user, compared against the current plan (which
+ * moves with TaskDependency's cascade).
  * ---------------------------------------------------------------------
  *
  * @author    IMAGUNET S.A.S.
@@ -22,14 +22,19 @@ use Session;
 
 class Baseline extends CommonDBTM
 {
-    /** Derecho propio del plugin para este objeto */
+    /** Plugin's own right for this object */
     public static $rightname = 'plugin_projectmanager_baseline';
 
-    // ── Metadatos ────────────────────────────────────────────────────
+    // ── Metadata ─────────────────────────────────────────────────────
 
     public static function getTypeName($nb = 0): string
     {
         return _n('Baseline', 'Baselines', $nb, 'projectmanager');
+    }
+
+    public static function getIcon(): string
+    {
+        return 'ti ti-flag-3';
     }
 
     public static function getTable($classname = null): string
@@ -37,7 +42,7 @@ class Baseline extends CommonDBTM
         return 'glpi_plugin_projectmanager_baselines';
     }
 
-    // ── Pestaña en Project ────────────────────────────────────────────
+    // ── Tab on Project ───────────────────────────────────────────────
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
     {
@@ -76,7 +81,7 @@ class Baseline extends CommonDBTM
         return true;
     }
 
-    // ── Consultas ──────────────────────────────────────────────────────
+    // ── Queries ──────────────────────────────────────────────────────────
 
     public static function hasBaseline(int $projectId): bool
     {
@@ -98,7 +103,7 @@ class Baseline extends CommonDBTM
     }
 
     /**
-     * Compara, tarea por tarea, la línea base contra el plan actual.
+     * Compares, task by task, the baseline against the current plan.
      *
      * @return array<int, array{
      *     task_id: int, name: string,
@@ -157,12 +162,12 @@ class Baseline extends CommonDBTM
         return $rows;
     }
 
-    // ── Captura de línea base ──────────────────────────────────────────
+    // ── Baseline capture ─────────────────────────────────────────────────
 
     /**
-     * Captura (o sobreescribe) la línea base de todas las tareas del
-     * proyecto con sus fechas planificadas actuales. Las tareas sin
-     * fecha planificada se omiten (no hay nada que congelar todavía).
+     * Captures (or overwrites) the baseline of every task in the project
+     * with its current planned dates. Tasks with no planned date yet are
+     * skipped (there's nothing to freeze).
      *
      * @return array{set: int, skipped: int}
      */

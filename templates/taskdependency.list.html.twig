@@ -1,9 +1,9 @@
 {#
   Project Manager — taskdependency.list.html.twig
-  Pestaña "Dependencies" en ProjectTask.
+  "Dependencies" tab on ProjectTask.
 
   Variables:
-    task         → ProjectTask (objeto GLPI)
+    task         → ProjectTask (GLPI object)
     task_id      → int
     predecessors → array
     successors   → array
@@ -12,7 +12,7 @@
     cascade_auto → bool
 #}
 
-{# ── Header de la pestaña ─────────────────────────────────────────── #}
+{# ── Tab header ───────────────────────────────────────────────────── #}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0 text-muted fw-normal">
         <i class="ti ti-git-branch me-2 text-primary"></i>
@@ -43,7 +43,7 @@
 </div>
 {% endif %}
 
-{# ── Predecesoras ─────────────────────────────────────────────────── #}
+{# ── Predecessors ─────────────────────────────────────────────────── #}
 <div class="card mb-3">
     <div class="card-header d-flex align-items-center gap-2">
         <i class="ti ti-arrow-left text-primary"></i>
@@ -126,7 +126,7 @@
     </div>
 </div>
 
-{# ── Sucesoras ────────────────────────────────────────────────────── #}
+{# ── Successors ───────────────────────────────────────────────────── #}
 <div class="card mb-3">
     <div class="card-header d-flex align-items-center gap-2">
         <i class="ti ti-arrow-right text-success"></i>
@@ -195,7 +195,7 @@
     </div>
 </div>
 
-{# ── Formulario: agregar dependencia ──────────────────────────────── #}
+{# ── Form: add dependency ─────────────────────────────────────────── #}
 {% if can_write %}
 <div class="card border-primary">
     <div class="card-header bg-primary bg-opacity-10">
@@ -208,7 +208,7 @@
         <form method="post"
               action="{{ path('plugins/projectmanager/front/taskdependency.php') }}">
             <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
-            {# Esta tarea es siempre la SUCESORA (target) #}
+            {# This task is always the SUCCESSOR (target) #}
             <input type="hidden" name="projecttasks_id_target" value="{{ task_id }}">
 
             <div class="row g-2 align-items-end">

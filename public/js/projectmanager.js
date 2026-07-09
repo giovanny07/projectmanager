@@ -1,6 +1,6 @@
 /**
- * Project Manager — projectmanager.js + dependency_ui.js
- * Namespace global y lógica de UI para dependencias.
+ * Project Manager — projectmanager.js
+ * Global namespace and UI logic for task dependencies.
  *
  * @license GPL-3.0-or-later
  */
@@ -12,13 +12,23 @@
 window.ProjectManager = window.ProjectManager || {};
 
 /**
- * Carga las tareas del proyecto en el <select> de predecesoras.
+ * Reads the CSRF token GLPI exposes for JS via the page's meta tag.
+ * There is no `window.glpiCsrfToken` global in GLPI 11 — using it always
+ * sends an empty token and gets rejected with 403 by the CSRF listener.
+ */
+function _pmCsrfToken() {
+    const meta = document.querySelector('meta[property="glpi:csrf_token"]');
+    return meta ? meta.content : '';
+}
+
+/**
+ * Loads the project's tasks into the predecessor <select>.
  *
  * @param {object} opts
  * @param {number} opts.projectId
- * @param {number} opts.currentTaskId  Tarea a excluir (la actual)
- * @param {string} opts.selectId       ID del elemento <select>
- * @param {string} [opts.ajaxUrl]      URL del endpoint (calculada en PHP vía Plugin::getWebDir)
+ * @param {number} opts.currentTaskId  Task to exclude (the current one)
+ * @param {string} opts.selectId       ID of the <select> element
+ * @param {string} [opts.ajaxUrl]      Endpoint URL (computed in PHP via Plugin::getWebDir)
  */
 window.ProjectManager.loadPredecessorSelect = function (opts) {
     const sel = document.getElementById(opts.selectId);
@@ -29,7 +39,7 @@ window.ProjectManager.loadPredecessorSelect = function (opts) {
     const body = new URLSearchParams({
         projects_id:      opts.projectId,
         exclude_task_id:  opts.currentTaskId,
-        _glpi_csrf_token: window.glpiCsrfToken || '',
+        _glpi_csrf_token: _pmCsrfToken(),
     });
 
     const url = opts.ajaxUrl || `${CFG_GLPI.root_doc}/plugins/projectmanager/ajax/get_project_tasks.php`;
@@ -64,7 +74,7 @@ window.ProjectManager.loadPredecessorSelect = function (opts) {
 };
 
 /**
- * Dispara replanificación en cascada vía AJAX (sin recargar la página).
+ * Triggers a cascade reschedule via AJAX (without reloading the page).
  *
  * @param {number}   projectId
  * @param {number}   [changedTaskId=0]
@@ -82,7 +92,7 @@ window.ProjectManager.rescheduleProject = function (projectId, changedTaskId, on
         body: new URLSearchParams({
             projects_id:      projectId,
             changed_task_id:  changedTaskId || 0,
-            _glpi_csrf_token: window.glpiCsrfToken || '',
+            _glpi_csrf_token: _pmCsrfToken(),
         }),
     })
     .then(r => r.json())
@@ -101,7 +111,7 @@ window.ProjectManager.rescheduleProject = function (projectId, changedTaskId, on
     });
 };
 
-// ── Helpers privados ────────────────────────────────────────────────
+// ── Private helpers ──────────────────────────────────────────────────
 
 function _pmSetBtnLoading(btn, loading) {
     if (!btn) return;
@@ -117,7 +127,7 @@ function _pmSetBtnLoading(btn, loading) {
 }
 
 function _pmToast(message, type = 'info') {
-    // Reusar sistema de mensajes de GLPI si está disponible
+    // Reuse GLPI's own message system when available
     const glpiMessages = document.getElementById('messages_after_redirect');
 
     const wrapper = glpiMessages || (() => {
@@ -138,7 +148,7 @@ function _pmToast(message, type = 'info') {
     `;
     wrapper.prepend(alert);
 
-    // Auto-dismiss a los 5 segundos
+    // Auto-dismiss after 5 seconds
     setTimeout(() => {
         alert.classList.remove('show');
         setTimeout(() => alert.remove(), 300);
@@ -146,8 +156,8 @@ function _pmToast(message, type = 'info') {
 }
 
 /**
- * Traducción mínima: usa las traducciones inyectadas por PHP si existen,
- * de lo contrario retorna el string sin cambios.
+ * Minimal translation helper: uses the strings injected by PHP if present,
+ * otherwise returns the string unchanged.
  */
 function _pm(str) {
     return (window.ProjectManagerI18n || {})[str] || str;

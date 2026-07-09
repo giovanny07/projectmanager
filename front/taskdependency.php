@@ -2,7 +2,7 @@
 
 /**
  * Project Manager — front/taskdependency.php
- * Controlador CRUD para dependencias entre tareas.
+ * CRUD controller for task dependencies.
  *
  * No include() needed — LegacyFileLoadController bootstraps the environment
  * before invoking any file under front/ in GLPI 11.
@@ -19,7 +19,7 @@ use GlpiPlugin\Projectmanager\TaskDependency;
 use GlpiPlugin\Projectmanager\Config;
 
 
-// Verificaciones de seguridad
+// Security checks
 Session::checkLoginUser();
 (new Plugin())->checkPluginState('projectmanager');
 
@@ -29,7 +29,7 @@ if (!Config::isModuleEnabled('dependencies')) {
 
 $dep = new TaskDependency();
 
-// ── Agregar nueva dependencia ────────────────────────────────────────
+// ── Add new dependency ────────────────────────────────────────────────
 if (isset($_POST['add'])) {
     $dep->check(-1, CREATE, $_POST);
 
@@ -44,7 +44,7 @@ if (isset($_POST['add'])) {
     exit;
 }
 
-// ── Eliminar dependencia ─────────────────────────────────────────────
+// ── Delete dependency ─────────────────────────────────────────────────
 if (isset($_POST['purge'])) {
     $dep->check((int)$_POST['id'], DELETE);
     $dep->delete(['id' => (int)$_POST['id']], /* force */ true);
@@ -53,7 +53,7 @@ if (isset($_POST['purge'])) {
     exit;
 }
 
-// ── Recalcular cascada completa de un proyecto ───────────────────────
+// ── Recalculate a project's full cascade ──────────────────────────────
 if (isset($_POST['reschedule_project'])) {
     $projectId = (int)($_POST['projects_id'] ?? 0);
 
@@ -88,5 +88,5 @@ if (isset($_POST['reschedule_project'])) {
     exit;
 }
 
-// Fallback: redirigir a proyectos
+// Fallback: redirect to projects
 Html::redirect(GLPI_ROOT . '/front/project.php');

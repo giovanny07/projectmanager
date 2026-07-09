@@ -3,7 +3,7 @@
 /**
  * ---------------------------------------------------------------------
  * Project Manager — hook.php
- * Instalación, desinstalación y callbacks de ítems GLPI.
+ * Install, uninstall, and GLPI item callbacks.
  * ---------------------------------------------------------------------
  *
  * @author    IMAGUNET S.A.S.
@@ -15,13 +15,13 @@ use GlpiPlugin\Projectmanager\Baseline;
 use GlpiPlugin\Projectmanager\Config;
 
 /**
- * Instala o actualiza las tablas del plugin.
+ * Installs or updates the plugin's tables.
  *
- * Reglas de naming GLPI (obligatorias para Marketplace):
- *   - Tablas propias:    glpi_plugin_<nombre>_<entidad>
- *   - Dropdowns:         glpi_plugin_<nombre>_<entidad>s  (plural)
+ * GLPI naming rules (mandatory for the Marketplace):
+ *   - Own tables:  glpi_plugin_<name>_<entity>
+ *   - Dropdowns:   glpi_plugin_<name>_<entity>s  (plural)
  *
- * Nunca modificamos tablas del core de GLPI.
+ * Never modify GLPI core tables.
  */
 function plugin_projectmanager_install(): bool
 {
@@ -29,19 +29,19 @@ function plugin_projectmanager_install(): bool
 
     $migration = new Migration(PLUGIN_PROJECTMANAGER_VERSION);
 
-    // ── Tabla: dependencias entre tareas ─────────────────────────────
+    // ── Table: dependencies between tasks ─────────────────────────────
     if (!$DB->tableExists(TaskDependency::getTable())) {
         $DB->doQuery("
             CREATE TABLE `" . TaskDependency::getTable() . "` (
                 `id`                       INT UNSIGNED NOT NULL AUTO_INCREMENT,
                 `projecttasks_id_source`   INT UNSIGNED NOT NULL DEFAULT 0
-                    COMMENT 'Tarea predecesora — FK a glpi_projecttasks',
+                    COMMENT 'Predecessor task — FK to glpi_projecttasks',
                 `projecttasks_id_target`   INT UNSIGNED NOT NULL DEFAULT 0
-                    COMMENT 'Tarea sucesora   — FK a glpi_projecttasks',
+                    COMMENT 'Successor task   — FK to glpi_projecttasks',
                 `type`                     VARCHAR(2)   NOT NULL DEFAULT 'FS'
                     COMMENT 'FS | SS | FF | SF',
                 `lag_days`                 SMALLINT     NOT NULL DEFAULT 0
-                    COMMENT 'Lag (+) o lead (-) en días',
+                    COMMENT 'Lag (+) or lead (-) in days',
                 `is_deleted`               TINYINT(1)   NOT NULL DEFAULT 0,
                 `date_creation`            TIMESTAMP    NULL DEFAULT NULL,
                 `date_mod`                 TIMESTAMP    NULL DEFAULT NULL,
@@ -60,21 +60,21 @@ function plugin_projectmanager_install(): bool
             ) ENGINE=InnoDB
               DEFAULT CHARSET=utf8mb4
               COLLATE=utf8mb4_unicode_ci
-              COMMENT='ProjectManager: dependencias entre tareas de proyecto'
+              COMMENT='ProjectManager: dependencies between project tasks'
         ");
     }
 
-    // ── Tabla: línea base de cronograma por tarea ────────────────────
+    // ── Table: schedule baseline per task ─────────────────────────────
     if (!$DB->tableExists(Baseline::getTable())) {
         $DB->doQuery("
             CREATE TABLE `" . Baseline::getTable() . "` (
                 `id`                   INT UNSIGNED NOT NULL AUTO_INCREMENT,
                 `projecttasks_id`      INT UNSIGNED NOT NULL
-                    COMMENT 'Tarea — FK a glpi_projecttasks',
+                    COMMENT 'Task — FK to glpi_projecttasks',
                 `baseline_start_date`  TIMESTAMP    NULL DEFAULT NULL
-                    COMMENT 'plan_start_date congelada al fijar la línea base',
+                    COMMENT 'plan_start_date frozen when the baseline was set',
                 `baseline_end_date`    TIMESTAMP    NULL DEFAULT NULL
-                    COMMENT 'plan_end_date congelada al fijar la línea base',
+                    COMMENT 'plan_end_date frozen when the baseline was set',
                 `date_set`             TIMESTAMP    NULL DEFAULT NULL,
                 `users_id`             INT UNSIGNED NOT NULL DEFAULT 0,
                 PRIMARY KEY (`id`),
@@ -86,22 +86,22 @@ function plugin_projectmanager_install(): bool
             ) ENGINE=InnoDB
               DEFAULT CHARSET=utf8mb4
               COLLATE=utf8mb4_unicode_ci
-              COMMENT='ProjectManager: línea base de fechas planificadas por tarea'
+              COMMENT='ProjectManager: baseline of planned dates per task'
         ");
     }
 
-    // ── Tabla: configuración del plugin ──────────────────────────────
-    // Patrón behaviors: tabla propia con id=1, no glpi_configs
+    // ── Table: plugin configuration ───────────────────────────────────
+    // Behaviors pattern: own table with id=1, not glpi_configs
     Config::install($migration);
 
-    // Registrar los derechos propios en todos los perfiles (0 = sin acceso
-    // por defecto; el admin los habilita en Administration > Profiles).
-    // Sin esto las pestañas "Dependencies"/"Baseline" no aparecen para nadie,
-    // ni Super-Admin.
-    // ProfileRight::addProfileRights() NO es idempotente (INSERT sin
-    // verificar existencia) — install() puede volver a ejecutarse (p.ej.
-    // `plugin:install --force`), así que solo pedimos los derechos que
-    // todavía no tengan ninguna fila, o revienta con clave duplicada.
+    // Register the plugin's own rights on every profile (0 = no access
+    // by default; the admin enables them under Administration > Profiles).
+    // Without this, the "Dependencies"/"Baseline" tabs never appear for
+    // anyone, not even Super-Admin.
+    // ProfileRight::addProfileRights() is NOT idempotent (raw INSERT,
+    // no existence check) — install() can run again (e.g.
+    // `plugin:install --force`), so only request rights that don't have
+    // any row yet, or it crashes with a duplicate-key error.
     $newRights = array_filter(
         [TaskDependency::$rightname, Baseline::$rightname],
         static fn ($right) => !countElementsInTable('glpi_profilerights', ['name' => $right])
@@ -116,16 +116,16 @@ function plugin_projectmanager_install(): bool
 }
 
 /**
- * Desinstala el plugin: elimina tablas y configuración.
+ * Uninstalls the plugin: removes tables and configuration.
  *
- * GLPI llama esta función solo cuando el admin hace "Desinstalar".
- * Jamás se llama al desactivar — los datos persisten entre activaciones.
+ * GLPI only calls this when the admin clicks "Uninstall".
+ * Never called on deactivation — data persists across activations.
  */
 function plugin_projectmanager_uninstall(): bool
 {
     global $DB;
 
-    // Eliminar tablas en orden inverso a las FK
+    // Drop tables in reverse FK order
     $tables = [
         TaskDependency::getTable(),
         Baseline::getTable(),
@@ -133,17 +133,17 @@ function plugin_projectmanager_uninstall(): bool
 
     foreach ($tables as $table) {
         if ($DB->tableExists($table)) {
-            // Desactivar FK check temporalmente para DROP seguro
+            // Temporarily disable FK checks for a safe DROP
             $DB->doQuery("SET FOREIGN_KEY_CHECKS=0");
             $DB->doQuery("DROP TABLE IF EXISTS `{$table}`");
             $DB->doQuery("SET FOREIGN_KEY_CHECKS=1");
         }
     }
 
-    // Eliminar config del plugin de glpi_configs
+    // Remove the plugin's config from glpi_configs
     Config::uninstall();
 
-    // Eliminar derechos del plugin de glpi_profilerights
+    // Remove the plugin's rights from glpi_profilerights
     $DB->delete('glpi_profilerights', [
         'name' => ['LIKE', 'plugin_projectmanager_%'],
     ]);

@@ -52,7 +52,7 @@ function plugin_init_projectmanager(): void
 {
     global $PLUGIN_HOOKS;
 
-    // CSRF obligatorio en GLPI 11
+    // CSRF compliance is mandatory in GLPI 11
     $PLUGIN_HOOKS['csrf_compliant']['projectmanager'] = true;
 
     $plugin = new Plugin();
@@ -60,25 +60,25 @@ function plugin_init_projectmanager(): void
         return;
     }
 
-    // Registrar Config como tab en Setup > General (patrón satisfactionpopup exacto)
+    // Register Config as a tab on Setup > General (exact satisfactionpopup pattern)
     Plugin::registerClass(
         \GlpiPlugin\Projectmanager\Config::class,
         ['addtabon' => \Config::class]
     );
 
-    // Enlace "Configure" en Setup > Plugins
+    // "Configure" link under Setup > Plugins
     $PLUGIN_HOOKS['config_page']['projectmanager'] = 'front/config.php';
 
-    // Assets — patrón engage: lowercase, rutas relativas a public/
+    // Assets — engage pattern: lowercase, paths relative to public/
     $PLUGIN_HOOKS['add_css']['projectmanager']        = ['css/projectmanager.css'];
     $PLUGIN_HOOKS['add_javascript']['projectmanager'] = ['js/projectmanager.js'];
 
-    // Leer config para activar módulos
+    // Read config to decide which modules to activate
     $config = \GlpiPlugin\Projectmanager\Config::getInstance()->fields;
 
-    // Módulo: Dependencias de tareas
+    // Module: task dependencies
     if ((bool)(int)($config['module_dependencies'] ?? 0)) {
-        // GLPI 11: pestaña en ProjectTask vía registerClass (igual que Config en \Config::class)
+        // GLPI 11: tab on ProjectTask via registerClass (same as Config on \Config::class)
         Plugin::registerClass(
             \GlpiPlugin\Projectmanager\TaskDependency::class,
             ['addtabon' => \ProjectTask::class]
@@ -87,11 +87,11 @@ function plugin_init_projectmanager(): void
         $PLUGIN_HOOKS['item_update']['projectmanager']['ProjectTask'] =
             ['GlpiPlugin\\Projectmanager\\TaskDependency', 'onProjectTaskUpdate'];
 
-        // Bloqueo real (opt-in vía Config::block_unmet_dependencies)
+        // Real blocking (opt-in via Config::block_unmet_dependencies)
         $PLUGIN_HOOKS['pre_item_update']['projectmanager']['ProjectTask'] =
             ['GlpiPlugin\\Projectmanager\\TaskDependency', 'onProjectTaskPreUpdate'];
 
-        // Línea base: pestaña en Project
+        // Baseline: tab on Project
         Plugin::registerClass(
             \GlpiPlugin\Projectmanager\Baseline::class,
             ['addtabon' => \Project::class]

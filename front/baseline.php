@@ -2,7 +2,7 @@
 
 /**
  * Project Manager — front/baseline.php
- * Controlador: fija la línea base de cronograma de un proyecto.
+ * Controller: sets a project's schedule baseline.
  *
  * No include() needed — LegacyFileLoadController bootstraps the environment
  * before invoking any file under front/ in GLPI 11.

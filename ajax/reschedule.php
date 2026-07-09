@@ -2,9 +2,9 @@
 
 /**
  * Project Manager — ajax/reschedule.php
- * Endpoint JSON: replanificación en cascada desde el frontend.
+ * JSON endpoint: cascade reschedule triggered from the frontend.
  *
- * Patrón TECLIB: $AJAX_INCLUDE = 1 + Session::checkLoginUser()
+ * TECLIB pattern: $AJAX_INCLUDE = 1 + Session::checkLoginUser()
  *
  * @license GPL-3.0-or-later
  */

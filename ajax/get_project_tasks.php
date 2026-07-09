@@ -2,7 +2,7 @@
 
 /**
  * Project Manager — ajax/get_project_tasks.php
- * Patrón splitcat/gantt (TECLIB): Session::checkLoginUser() + Html::header_nocache()
+ * splitcat/gantt (TECLIB) pattern: Session::checkLoginUser() + Html::header_nocache()
  *
  * @license GPL-3.0-or-later
  */

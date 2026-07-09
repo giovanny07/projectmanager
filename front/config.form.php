@@ -2,7 +2,7 @@
 
 /**
  * Project Manager — front/config.form.php
- * Solo procesa POST del formulario de configuración y redirige.
+ * Only processes the config form POST and redirects.
  *
  * @license GPL-3.0-or-later
  */

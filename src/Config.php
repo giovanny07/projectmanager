@@ -2,7 +2,7 @@
 
 /**
  * Project Manager — Config
- * Patrón: behaviors plugin (CommonDBTM, tabla propia, front propio).
+ * Pattern: behaviors plugin (CommonDBTM, own table, own front controller).
  *
  * @author  IMAGUNET S.A.S.
  * @license GPL-3.0-or-later
@@ -24,7 +24,7 @@ class Config extends CommonDBTM
 
     public static $rightname = 'config';
 
-    // ── Singleton (id=1 en tabla) ─────────────────────────────────────────
+    // ── Singleton (id=1 in table) ───────────────────────────────────────
 
     public static function getInstance(): self
     {
@@ -37,11 +37,16 @@ class Config extends CommonDBTM
         return self::$_instance;
     }
 
-    // ── Metadatos ────────────────────────────────────────────────────────
+    // ── Metadata ─────────────────────────────────────────────────────────
 
     public static function getTypeName($nb = 0): string
     {
         return 'Project Manager';
+    }
+
+    public static function getIcon(): string
+    {
+        return 'ti ti-layout-kanban';
     }
 
     public static function canCreate(): bool
@@ -54,7 +59,7 @@ class Config extends CommonDBTM
         return Session::haveRight('config', READ);
     }
 
-    // ── Instalación (tabla propia) ────────────────────────────────────────
+    // ── Install (own table) ─────────────────────────────────────────────
 
     public static function install(Migration $migration): void
     {
@@ -81,7 +86,7 @@ class Config extends CommonDBTM
 
             $DB->doQuery("INSERT INTO `{$table}` (id, date_mod) VALUES (1, NOW())");
         } elseif (!$DB->fieldExists($table, 'block_unmet_dependencies')) {
-            // Migración: instalaciones existentes no tienen esta columna todavía.
+            // Migration: existing installs don't have this column yet.
             $migration->addField(
                 $table,
                 'block_unmet_dependencies',
@@ -98,7 +103,7 @@ class Config extends CommonDBTM
         $DB->dropTable(self::getTable(), true);
     }
 
-    // ── Helpers de lectura ────────────────────────────────────────────────
+    // ── Read helpers ─────────────────────────────────────────────────────
 
     public static function getValue(string $key)
     {
@@ -106,7 +111,7 @@ class Config extends CommonDBTM
     }
 
     /**
-     * Alias de getValue() con soporte de valor por defecto.
+     * Alias of getValue() with default-value support.
      */
     public static function get(string $key, $default = null)
     {
@@ -119,7 +124,7 @@ class Config extends CommonDBTM
         return (bool)(int)self::getValue("module_{$module}");
     }
 
-    // ── Tab en Setup > General ────────────────────────────────────────────
+    // ── Tab on Setup > General ──────────────────────────────────────────
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
     {
@@ -140,7 +145,7 @@ class Config extends CommonDBTM
         return true;
     }
 
-    // ── Formulario ────────────────────────────────────────────────────────
+    // ── Form ─────────────────────────────────────────────────────────────
 
     public static function showConfigForm($item = null): bool
     {
@@ -150,7 +155,7 @@ class Config extends CommonDBTM
 
         $config = self::getInstance();
 
-        // getFormURL() retorna la URL correcta tanto para /plugins/ como /marketplace/
+        // getFormURL() returns the correct URL for both /plugins/ and /marketplace/
         $action = self::getFormURL();
 
         TemplateRenderer::getInstance()->display(

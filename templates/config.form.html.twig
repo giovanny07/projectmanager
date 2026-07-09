@@ -1,9 +1,9 @@
 {#
   Project Manager — config.form.html.twig
-  Este template se renderiza dentro de una PESTAÑA de CommonGLPI (Config tab).
-  En ese contexto NO se usa header.html.twig ni footer.html.twig —
-  esos son para páginas completas.
-  El form es explícito aquí, con CSRF vía csrf_token() de Twig.
+  This template renders inside a CommonGLPI tab (the Config tab).
+  In that context header.html.twig/footer.html.twig are NOT used —
+  those are for full pages.
+  The form is explicit here, with CSRF via Twig's csrf_token().
 #}
 
 {% import 'components/form/fields_macros.html.twig' as fields %}
@@ -22,7 +22,7 @@
             <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="id" value="{{ id }}">
 
-            {# ── Módulos disponibles ──────────────────────────────────── #}
+            {# ── Available modules ────────────────────────────────────── #}
             <div class="hr-text">
                 <i class="ti ti-puzzle"></i>
                 <span>{{ __('Available modules', 'projectmanager') }}</span>
@@ -41,7 +41,6 @@
                                     <p class="text-muted small mb-2">
                                         {{ __('FS, SS, FF, SF dependencies with automatic cascade rescheduling.', 'projectmanager') }}
                                     </p>
-                                    <span class="badge bg-success-lt">v1.0.0</span>
                                 </div>
                                 <div class="form-check form-switch ms-3 mt-1">
                                     <input type="hidden" name="module_dependencies" value="0">
@@ -77,7 +76,7 @@
                 </div>
             </div>
 
-            {# ── Opciones de dependencias ─────────────────────────────── #}
+            {# ── Dependencies options ─────────────────────────────────── #}
             <div class="hr-text">
                 <i class="ti ti-git-branch"></i>
                 <span>{{ __('Dependencies — Options', 'projectmanager') }}</span>
@@ -142,7 +141,7 @@
                 </div>
             </div>
 
-            {# ── Guardar ──────────────────────────────────────────────── #}
+            {# ── Save ──────────────────────────────────────────────────── #}
             <div class="hstack gap-1">
                 <div class="pe-5 ms-auto">
                     <button class="btn btn-primary" type="submit" name="update" value="1">

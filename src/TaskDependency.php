@@ -3,7 +3,7 @@
 /**
  * ---------------------------------------------------------------------
  * Project Manager — TaskDependency
- * Motor de dependencias y replanificación en cascada.
+ * Dependency engine and cascade rescheduling.
  * ---------------------------------------------------------------------
  *
  * @author    IMAGUNET S.A.S.
@@ -20,14 +20,14 @@ use Toolbox;
 use Log;
 
 /**
- * Tipos de dependencia entre tareas de proyecto.
+ * Dependency types between project tasks.
  */
 final class DependencyType
 {
-    const FS = 'FS'; // Finish-to-Start  (más común)
+    const FS = 'FS'; // Finish-to-Start  (most common)
     const SS = 'SS'; // Start-to-Start
     const FF = 'FF'; // Finish-to-Finish
-    const SF = 'SF'; // Start-to-Finish  (raro)
+    const SF = 'SF'; // Start-to-Finish  (rare)
 
     public static function getAll(): array
     {
@@ -46,28 +46,34 @@ final class DependencyType
 }
 
 /**
- * Gestión de dependencias entre tareas de proyecto.
+ * Manages dependencies between project tasks.
  *
- * Responsabilidades:
- *  1. CRUD de dependencias (hereda de CommonDBTM)
- *  2. Pestaña en ProjectTask (getTabNameForItem / displayTabContentForItem)
- *  3. Hook ITEM_UPDATE → motor de replanificación en cascada
- *  4. Detección de ciclos (DFS)
- *  5. Orden topológico (Kahn's algorithm)
+ * Responsibilities:
+ *  1. Dependency CRUD (inherits from CommonDBTM)
+ *  2. Tab on ProjectTask (getTabNameForItem / displayTabContentForItem)
+ *  3. PRE_ITEM_UPDATE hook → opt-in real blocking
+ *  4. ITEM_UPDATE hook → cascade rescheduling engine
+ *  5. Cycle detection (DFS)
+ *  6. Topological order (Kahn's algorithm)
  */
 class TaskDependency extends CommonDBTM
 {
-    /** Derecho propio del plugin para este objeto */
+    /** Plugin's own right for this object */
     public static $rightname = 'plugin_projectmanager_taskdependency';
 
-    /** Registra cambios en el historial de GLPI */
+    /** Log changes in GLPI history */
     public $dohistory = true;
 
-    // ── Metadatos ────────────────────────────────────────────────────
+    // ── Metadata ─────────────────────────────────────────────────────
 
     public static function getTypeName($nb = 0): string
     {
         return _n('Task dependency', 'Task dependencies', $nb, 'projectmanager');
+    }
+
+    public static function getIcon(): string
+    {
+        return 'ti ti-git-branch';
     }
 
     public static function getTable($classname = null): string
@@ -75,10 +81,10 @@ class TaskDependency extends CommonDBTM
         return 'glpi_plugin_projectmanager_taskdependencies';
     }
 
-    // ── Pestaña en ProjectTask ───────────────────────────────────────
+    // ── Tab on ProjectTask ────────────────────────────────────────────
 
     /**
-     * Registra la pestaña y retorna su label con contador.
+     * Registers the tab and returns its label with a counter.
      */
     public function getTabNameForItem(\CommonGLPI $item, $withtemplate = 0): string
     {
@@ -100,7 +106,7 @@ class TaskDependency extends CommonDBTM
     }
 
     /**
-     * Renderiza el contenido de la pestaña vía Twig.
+     * Renders the tab content via Twig.
      */
     public static function displayTabContentForItem(
         \CommonGLPI $item,
@@ -131,15 +137,15 @@ class TaskDependency extends CommonDBTM
         return true;
     }
 
-    // ── Hook: PRE_ITEM_UPDATE en ProjectTask (bloqueo real, opt-in) ───
+    // ── Hook: PRE_ITEM_UPDATE on ProjectTask (opt-in real blocking) ───
 
     /**
-     * Disparado por GLPI ANTES de guardar una ProjectTask. Si
-     * "block_unmet_dependencies" está activo, veta el guardado
-     * (poniendo $item->input = false) cuando la tarea intenta
-     * iniciar/terminar sin que sus predecesoras cumplan la
-     * dependencia (FS/SS/FF/SF). Desactivado por defecto: sin esta
-     * opción, GLPI core solo advierte visualmente, nunca bloquea.
+     * Fired by GLPI BEFORE a ProjectTask is saved. If
+     * "block_unmet_dependencies" is enabled, vetoes the save (by
+     * setting $item->input = false) when the task tries to
+     * start/finish without its predecessors satisfying the
+     * dependency (FS/SS/FF/SF). Disabled by default: without this
+     * option, GLPI core only warns visually, never blocks.
      */
     public static function onProjectTaskPreUpdate(\CommonDBTM $item): void
     {
@@ -203,11 +209,11 @@ class TaskDependency extends CommonDBTM
         }
     }
 
-    // ── Hook: ITEM_UPDATE en ProjectTask ─────────────────────────────
+    // ── Hook: ITEM_UPDATE on ProjectTask ──────────────────────────────
 
     /**
-     * Disparado por GLPI cuando se actualiza una ProjectTask.
-     * Solo ejecuta cascada si el módulo está activo y la config lo permite.
+     * Fired by GLPI when a ProjectTask is updated.
+     * Only runs the cascade if the module is active and config allows it.
      */
     public static function onProjectTaskUpdate(\CommonDBTM $item): void
     {
@@ -220,10 +226,10 @@ class TaskDependency extends CommonDBTM
         }
 
         if (!(bool)(int)Config::get('cascade_auto', '1')) {
-            return; // Usuario prefiere recalcular manualmente
+            return; // User prefers to recalculate manually
         }
 
-        // Solo replanificar si cambiaron campos relevantes al cronograma
+        // Only reschedule if a schedule-relevant field actually changed
         $watched = ['plan_start_date', 'plan_end_date', 'real_end_date', 'percent_done'];
         $changed = false;
 
@@ -244,21 +250,21 @@ class TaskDependency extends CommonDBTM
         }
     }
 
-    // ── Motor de replanificación en cascada ──────────────────────────
+    // ── Cascade rescheduling engine ───────────────────────────────────
 
     /**
-     * Replanifica todas las tareas de un proyecto respetando dependencias.
+     * Reschedules every task in a project honoring dependencies.
      *
-     * Algoritmo:
-     *  1. Carga tareas y dependencias del proyecto
-     *  2. Construye grafo dirigido
-     *  3. Detecta ciclos con Kahn's algorithm (topological sort)
-     *  4. Calcula earliest start date por tipo FS/SS/FF/SF y lag
-     *  5. Aplica nuevas fechas SOLO si hay desplazamiento hacia adelante
-     *  6. Registra en historial GLPI si cascade_log está activo
+     * Algorithm:
+     *  1. Load the project's tasks and dependencies
+     *  2. Build a directed graph
+     *  3. Detect cycles with Kahn's algorithm (topological sort)
+     *  4. Compute the earliest start date per FS/SS/FF/SF type and lag
+     *  5. Apply new dates ONLY if they push the task forward
+     *  6. Log to GLPI history if cascade_log is enabled
      *
-     * @param int $projectId      ID del proyecto a replanificar
-     * @param int $changedTaskId  Tarea que disparó el recálculo (para log)
+     * @param int $projectId      Project to reschedule
+     * @param int $changedTaskId  Task that triggered the recalculation (for logging)
      * @return array{rescheduled: int, errors: string[]}
      */
     public static function rescheduleProject(int $projectId, int $changedTaskId = 0): array
@@ -268,7 +274,7 @@ class TaskDependency extends CommonDBTM
         $result = ['rescheduled' => 0, 'errors' => []];
         $logEnabled = (bool)(int)Config::get('cascade_log', '1');
 
-        // 1. Cargar tareas del proyecto
+        // 1. Load the project's tasks
         $tasksData = [];
         foreach ($DB->request([
             'FROM'  => 'glpi_projecttasks',
@@ -278,12 +284,12 @@ class TaskDependency extends CommonDBTM
         }
 
         if (count($tasksData) < 2) {
-            return $result; // Sin suficientes tareas no hay cascada posible
+            return $result; // Not enough tasks for a cascade to be possible
         }
 
         $taskIds = array_keys($tasksData);
 
-        // 2. Cargar dependencias entre las tareas de este proyecto
+        // 2. Load dependencies between this project's tasks
         $adjacency = []; // source → [target, ...]
         $reverse   = []; // target → [{source, type, lag}, ...]
         $inDegree  = array_fill_keys($taskIds, 0);
@@ -295,7 +301,7 @@ class TaskDependency extends CommonDBTM
             $src = (int)$dep['projecttasks_id_source'];
             $tgt = (int)$dep['projecttasks_id_target'];
 
-            // Solo dependencias entre tareas del mismo proyecto
+            // Only dependencies between tasks of this same project
             if (!isset($tasksData[$src], $tasksData[$tgt])) {
                 continue;
             }
@@ -309,7 +315,7 @@ class TaskDependency extends CommonDBTM
             $inDegree[$tgt]++;
         }
 
-        // 3. Kahn's algorithm: orden topológico + detección de ciclos
+        // 3. Kahn's algorithm: topological order + cycle detection
         $queue = [];
         foreach ($inDegree as $id => $deg) {
             if ($deg === 0) {
@@ -328,7 +334,7 @@ class TaskDependency extends CommonDBTM
             }
         }
 
-        // Si no se procesaron todos los nodos con dependencias → ciclo
+        // If not every node with dependencies was processed → cycle
         $nodesWithDeps = array_unique(
             array_merge(array_keys($adjacency), array_keys($reverse))
         );
@@ -339,7 +345,7 @@ class TaskDependency extends CommonDBTM
             return $result;
         }
 
-        // 4. Calcular earliest start en orden topológico
+        // 4. Compute earliest start in topological order
         $earlyStart = [];
         foreach ($tasksData as $id => $task) {
             $earlyStart[$id] = $task['plan_start_date']
@@ -383,7 +389,7 @@ class TaskDependency extends CommonDBTM
             }
         }
 
-        // 5. Aplicar nuevas fechas solo si hay retraso (nunca acortar)
+        // 5. Apply new dates only if they cause a delay (never shorten)
         foreach ($topoOrder as $taskId) {
             $task        = $tasksData[$taskId];
             $newStartTs  = $earlyStart[$taskId] ?? 0;
@@ -398,18 +404,18 @@ class TaskDependency extends CommonDBTM
             $newStart   = date('Y-m-d H:i:s', $newStartTs);
             $newEnd     = date('Y-m-d H:i:s', $newStartTs + $dur);
 
-            // Actualización directa en BD para evitar recursión del hook
+            // Direct DB update to avoid recursing into the hook
             $DB->update('glpi_projecttasks', [
                 'plan_start_date' => $newStart,
                 'plan_end_date'   => $newEnd,
                 'date_mod'        => date('Y-m-d H:i:s'),
             ], ['id' => $taskId]);
 
-            // Sincronizar el array local para que las sucesoras usen fecha nueva
+            // Sync the local array so successors use the new date
             $tasksData[$taskId]['plan_start_date'] = $newStart;
             $tasksData[$taskId]['plan_end_date']   = $newEnd;
 
-            // 6. Historial GLPI
+            // 6. GLPI history
             if ($logEnabled) {
                 Log::history(
                     $taskId,
@@ -430,7 +436,7 @@ class TaskDependency extends CommonDBTM
         return $result;
     }
 
-    // ── Consultas de grafo ───────────────────────────────────────────
+    // ── Graph queries ──────────────────────────────────────────────────
 
     public static function getPredecessorsOf(int $taskId): array
     {
@@ -510,11 +516,11 @@ class TaskDependency extends CommonDBTM
         );
     }
 
-    // ── Detección de ciclos ──────────────────────────────────────────
+    // ── Cycle detection ────────────────────────────────────────────────
 
     /**
-     * Verifica si agregar source→target crearía un ciclo.
-     * Usa DFS desde target buscando llegar a source.
+     * Checks whether adding source→target would create a cycle.
+     * Uses DFS from target trying to reach source.
      */
     public static function wouldCreateCycle(int $sourceId, int $targetId): bool
     {
@@ -540,7 +546,7 @@ class TaskDependency extends CommonDBTM
         return false;
     }
 
-    // ── Validación de input ──────────────────────────────────────────
+    // ── Input validation ────────────────────────────────────────────────
 
     public function prepareInputForAdd($input)
     {
@@ -590,11 +596,11 @@ class TaskDependency extends CommonDBTM
         return $input;
     }
 
-    // ── Helper privado ───────────────────────────────────────────────
+    // ── Private helper ───────────────────────────────────────────────
 
     /**
-     * Duración planificada de una tarea en segundos.
-     * Usa plan_start_date / plan_end_date; fallback a planned_duration en minutos.
+     * Planned duration of a task in seconds.
+     * Uses plan_start_date / plan_end_date; falls back to planned_duration (minutes).
      */
     private static function durationSeconds(array $task): int
     {

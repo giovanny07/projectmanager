@@ -1,17 +1,17 @@
 /**
  * Project Manager — projectmanager.css
  *
- * CSS mínimo. Todo lo visual usa clases nativas de GLPI/Bootstrap 5.
- * Solo definimos lo que no existe en el framework base.
+ * Minimal CSS. Everything visual uses native GLPI/Bootstrap 5 classes.
+ * Only defines what doesn't already exist in the base framework.
  *
- * Prefijo .pm- en todas las clases propias para evitar colisiones.
+ * All custom classes are prefixed .pm- to avoid collisions.
  *
  * @license GPL-3.0-or-later
  */
 
-/* ── Pestaña de dependencias ───────────────────────────────────────── */
+/* ── Dependencies tab ─────────────────────────────────────────────── */
 
-/* Badge de tipo de dependencia con ancho fijo para alinear columnas */
+/* Dependency type badge with fixed width to align columns */
 .pm-dep-type-badge {
     min-width: 2.5rem;
     text-align: center;
@@ -21,7 +21,7 @@
     letter-spacing: 0.03em;
 }
 
-/* Indicador de retraso en predecesora vencida */
+/* Overdue predecessor indicator */
 .pm-overdue-icon {
     color: var(--bs-danger);
     animation: pm-pulse 1.5s ease-in-out infinite;
@@ -32,9 +32,9 @@
     50%       { opacity: 0.4; }
 }
 
-/* ── Feedback de cascada ─────────────────────────────────────────── */
+/* ── Cascade feedback ─────────────────────────────────────────────── */
 
-/* Toast de resultado de replanificación */
+/* Reschedule result toast */
 .pm-cascade-toast {
     position: fixed;
     top: 4.5rem;
@@ -44,14 +44,14 @@
     max-width: 400px;
 }
 
-/* Spinner dentro del botón de recalcular */
+/* Spinner inside the recalculate button */
 .pm-btn-loading .ti {
     display: none;
 }
 
 /* ── Config page ─────────────────────────────────────────────────── */
 
-/* Tarjeta de módulo en la página de configuración */
+/* Module card on the config page */
 .pm-module-card {
     border-left: 4px solid var(--bs-primary);
     transition: border-color 0.2s;

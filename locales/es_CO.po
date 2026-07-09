@@ -202,7 +202,7 @@ msgid_plural "%d tasks skipped (no planned dates yet)."
 msgstr[0] "%d tarea omitida (sin fechas planificadas aún)."
 msgstr[1] "%d tareas omitidas (sin fechas planificadas aún)."
 
-# ── Bloqueo real de dependencias ────────────────────────────────────────
+# ── Real dependency blocking ────────────────────────────────────────────
 msgid "Block tasks with unmet dependencies"
 msgstr "Bloquear tareas con dependencias incumplidas"
 
@@ -212,6 +212,6 @@ msgstr "Evita iniciar/terminar una tarea hasta que sus predecesoras cumplan la d
 msgid "Cannot save: predecessor \"%1$s\" does not satisfy the %2$s dependency yet."
 msgstr "No se puede guardar: la predecesora \"%1$s\" aún no cumple la dependencia %2$s."
 
-# ── Hitos ─────────────────────────────────────────────────────────────
+# ── Milestones ────────────────────────────────────────────────────────
 msgid "Milestone"
 msgstr "Hito"

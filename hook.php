@@ -67,6 +67,11 @@ function plugin_projectmanager_install(): bool
     // Patrón behaviors: tabla propia con id=1, no glpi_configs
     Config::install($migration);
 
+    // Registrar el derecho propio en todos los perfiles (0 = sin acceso
+    // por defecto; el admin lo habilita en Administration > Profiles).
+    // Sin esto la pestaña "Dependencies" no aparece para nadie, ni Super-Admin.
+    ProfileRight::addProfileRights([TaskDependency::$rightname]);
+
     $migration->executeMigration();
 
     return true;

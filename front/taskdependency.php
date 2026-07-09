@@ -1,9 +1,16 @@
 <?php
-include('../../../inc/includes.php');
 
 /**
  * Project Manager — front/taskdependency.php
  * Controlador CRUD para dependencias entre tareas.
+ *
+ * No include() needed — LegacyFileLoadController bootstraps the environment
+ * before invoking any file under front/ in GLPI 11.
+ *
+ * No explicit Session::checkCSRF() here: GLPI 11's kernel-level
+ * CheckCsrfListener already validates (and consumes) the token for every
+ * non-GET request before this controller runs. Calling checkCSRF() again
+ * here fails legitimate requests, because the token was already spent.
  *
  * @license GPL-3.0-or-later
  */
@@ -14,8 +21,7 @@ use GlpiPlugin\Projectmanager\Config;
 
 // Verificaciones de seguridad
 Session::checkLoginUser();
-Plugin::checkPluginState('projectmanager');
-Session::checkCSRF($_POST);
+(new Plugin())->checkPluginState('projectmanager');
 
 if (!Config::isModuleEnabled('dependencies')) {
     Html::displayErrorAndDie(__('Dependencies module is not enabled.', 'projectmanager'));

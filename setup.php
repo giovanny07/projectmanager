@@ -86,6 +86,12 @@ function plugin_init_projectmanager(): void
 
         $PLUGIN_HOOKS['item_update']['projectmanager']['ProjectTask'] =
             ['GlpiPlugin\\Projectmanager\\TaskDependency', 'onProjectTaskUpdate'];
+
+        // Línea base: pestaña en Project
+        Plugin::registerClass(
+            \GlpiPlugin\Projectmanager\Baseline::class,
+            ['addtabon' => \Project::class]
+        );
     }
 }
 

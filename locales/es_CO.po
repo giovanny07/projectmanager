@@ -1,6 +1,6 @@
 # Project Manager — GLPI Plugin
 # Copyright (C) 2026 IMAGUNET S.A.S.
-# License: AGPL-3.0-or-later
+# License: GPL-3.0-or-later
 #
 msgid ""
 msgstr ""
@@ -155,3 +155,49 @@ msgstr "Error"
 
 msgid "Server communication error."
 msgstr "Error de comunicación con el servidor."
+
+# ── Baseline ──────────────────────────────────────────────────────────
+msgid "Baseline"
+msgid_plural "Baselines"
+msgstr[0] "Línea base"
+msgstr[1] "Líneas base"
+
+msgid "Schedule baseline"
+msgstr "Línea base del cronograma"
+
+msgid "Set baseline"
+msgstr "Fijar línea base"
+
+msgid "Re-set baseline"
+msgstr "Re-fijar línea base"
+
+msgid "This will overwrite the existing baseline for this project. Continue?"
+msgstr "Esto sobreescribirá la línea base existente de este proyecto. ¿Continuar?"
+
+msgid "No baseline set yet for this project."
+msgstr "Este proyecto aún no tiene línea base."
+
+msgid "This project has no tasks yet."
+msgstr "Este proyecto aún no tiene tareas."
+
+msgid "Baseline start"
+msgstr "Inicio línea base"
+
+msgid "Baseline end"
+msgstr "Fin línea base"
+
+msgid "Variance (days)"
+msgstr "Varianza (días)"
+
+msgid "On time"
+msgstr "A tiempo"
+
+msgid "Baseline set for %d task."
+msgid_plural "Baseline set for %d tasks."
+msgstr[0] "Línea base fijada para %d tarea."
+msgstr[1] "Línea base fijada para %d tareas."
+
+msgid "%d task skipped (no planned dates yet)."
+msgid_plural "%d tasks skipped (no planned dates yet)."
+msgstr[0] "%d tarea omitida (sin fechas planificadas aún)."
+msgstr[1] "%d tareas omitidas (sin fechas planificadas aún)."

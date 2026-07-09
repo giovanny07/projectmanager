@@ -11,6 +11,7 @@
  */
 
 use GlpiPlugin\Projectmanager\TaskDependency;
+use GlpiPlugin\Projectmanager\Baseline;
 use GlpiPlugin\Projectmanager\Config;
 
 /**
@@ -63,14 +64,41 @@ function plugin_projectmanager_install(): bool
         ");
     }
 
+    // ── Tabla: línea base de cronograma por tarea ────────────────────
+    if (!$DB->tableExists(Baseline::getTable())) {
+        $DB->doQuery("
+            CREATE TABLE `" . Baseline::getTable() . "` (
+                `id`                   INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `projecttasks_id`      INT UNSIGNED NOT NULL
+                    COMMENT 'Tarea — FK a glpi_projecttasks',
+                `baseline_start_date`  TIMESTAMP    NULL DEFAULT NULL
+                    COMMENT 'plan_start_date congelada al fijar la línea base',
+                `baseline_end_date`    TIMESTAMP    NULL DEFAULT NULL
+                    COMMENT 'plan_end_date congelada al fijar la línea base',
+                `date_set`             TIMESTAMP    NULL DEFAULT NULL,
+                `users_id`             INT UNSIGNED NOT NULL DEFAULT 0,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `uniq_task` (`projecttasks_id`),
+                CONSTRAINT `fk_pm_baseline_task`
+                    FOREIGN KEY (`projecttasks_id`)
+                    REFERENCES `glpi_projecttasks` (`id`)
+                    ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE=InnoDB
+              DEFAULT CHARSET=utf8mb4
+              COLLATE=utf8mb4_unicode_ci
+              COMMENT='ProjectManager: línea base de fechas planificadas por tarea'
+        ");
+    }
+
     // ── Tabla: configuración del plugin ──────────────────────────────
     // Patrón behaviors: tabla propia con id=1, no glpi_configs
     Config::install($migration);
 
-    // Registrar el derecho propio en todos los perfiles (0 = sin acceso
-    // por defecto; el admin lo habilita en Administration > Profiles).
-    // Sin esto la pestaña "Dependencies" no aparece para nadie, ni Super-Admin.
-    ProfileRight::addProfileRights([TaskDependency::$rightname]);
+    // Registrar los derechos propios en todos los perfiles (0 = sin acceso
+    // por defecto; el admin los habilita en Administration > Profiles).
+    // Sin esto las pestañas "Dependencies"/"Baseline" no aparecen para nadie,
+    // ni Super-Admin.
+    ProfileRight::addProfileRights([TaskDependency::$rightname, Baseline::$rightname]);
 
     $migration->executeMigration();
 
@@ -90,7 +118,7 @@ function plugin_projectmanager_uninstall(): bool
     // Eliminar tablas en orden inverso a las FK
     $tables = [
         TaskDependency::getTable(),
-        
+        Baseline::getTable(),
     ];
 
     foreach ($tables as $table) {

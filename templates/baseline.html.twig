@@ -1,0 +1,90 @@
+{#
+  Project Manager — baseline.html.twig
+  Pestaña "Baseline" en Project.
+
+  Variables:
+    project_id   → int
+    rows         → array de comparación línea base vs plan actual, por tarea
+    has_baseline → bool
+    can_write    → bool
+#}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0 text-muted fw-normal">
+        <i class="ti ti-flag-3 me-2 text-primary"></i>
+        {{ __('Schedule baseline', 'projectmanager') }}
+    </h5>
+
+    {% if can_write %}
+    <form method="post"
+          action="{{ path('plugins/projectmanager/front/baseline.php') }}"
+          class="d-inline"
+          {% if has_baseline %}
+          onsubmit="return confirm('{{ __('This will overwrite the existing baseline for this project. Continue?', 'projectmanager')|e('js') }}')"
+          {% endif %}>
+        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="projects_id" value="{{ project_id }}">
+        <button type="submit" name="set_baseline" value="1"
+                class="btn btn-sm btn-outline-primary">
+            <i class="ti ti-flag-3 me-1"></i>
+            {{ has_baseline ? __('Re-set baseline', 'projectmanager') : __('Set baseline', 'projectmanager') }}
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+{% if not has_baseline %}
+<div class="alert alert-info py-2 mb-3">
+    <i class="ti ti-info-circle me-1"></i>
+    {{ __('No baseline set yet for this project.', 'projectmanager') }}
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if rows is empty %}
+            <p class="text-muted text-center py-3 mb-0 small">
+                {{ __('This project has no tasks yet.', 'projectmanager') }}
+            </p>
+        {% else %}
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ __('Task') }}</th>
+                        <th>{{ __('Baseline start', 'projectmanager') }}</th>
+                        <th>{{ __('Baseline end', 'projectmanager') }}</th>
+                        <th>{{ __('Plan start') }}</th>
+                        <th>{{ __('Plan end') }}</th>
+                        <th class="text-center">{{ __('Variance (days)', 'projectmanager') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>
+                            <a href="{{ path('front/projecttask.form.php') }}?id={{ row.task_id }}">
+                                {{ row.name }}
+                            </a>
+                        </td>
+                        <td class="small">{{ row.baseline_start ? row.baseline_start|date('d/m/Y') : '—' }}</td>
+                        <td class="small">{{ row.baseline_end ? row.baseline_end|date('d/m/Y') : '—' }}</td>
+                        <td class="small">{{ row.plan_start ? row.plan_start|date('d/m/Y') : '—' }}</td>
+                        <td class="small">{{ row.plan_end ? row.plan_end|date('d/m/Y') : '—' }}</td>
+                        <td class="text-center">
+                            {% if row.end_variance is null %}
+                                —
+                            {% elseif row.end_variance == 0 %}
+                                <span class="badge bg-success-lt">{{ __('On time', 'projectmanager') }}</span>
+                            {% elseif row.end_variance > 0 %}
+                                <span class="badge bg-danger-lt">+{{ row.end_variance }}d</span>
+                            {% else %}
+                                <span class="badge bg-success-lt">{{ row.end_variance }}d</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>

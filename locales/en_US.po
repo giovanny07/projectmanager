@@ -1,6 +1,6 @@
 # Project Manager — GLPI Plugin
 # Copyright (C) 2026 IMAGUNET S.A.S.
-# License: AGPL-3.0-or-later
+# License: GPL-3.0-or-later
 #
 msgid ""
 msgstr ""
@@ -155,3 +155,49 @@ msgstr "Error"
 
 msgid "Server communication error."
 msgstr "Server communication error."
+
+# ── Baseline ──────────────────────────────────────────────────────────
+msgid "Baseline"
+msgid_plural "Baselines"
+msgstr[0] "Baseline"
+msgstr[1] "Baselines"
+
+msgid "Schedule baseline"
+msgstr "Schedule baseline"
+
+msgid "Set baseline"
+msgstr "Set baseline"
+
+msgid "Re-set baseline"
+msgstr "Re-set baseline"
+
+msgid "This will overwrite the existing baseline for this project. Continue?"
+msgstr "This will overwrite the existing baseline for this project. Continue?"
+
+msgid "No baseline set yet for this project."
+msgstr "No baseline set yet for this project."
+
+msgid "This project has no tasks yet."
+msgstr "This project has no tasks yet."
+
+msgid "Baseline start"
+msgstr "Baseline start"
+
+msgid "Baseline end"
+msgstr "Baseline end"
+
+msgid "Variance (days)"
+msgstr "Variance (days)"
+
+msgid "On time"
+msgstr "On time"
+
+msgid "Baseline set for %d task."
+msgid_plural "Baseline set for %d tasks."
+msgstr[0] "Baseline set for %d task."
+msgstr[1] "Baseline set for %d tasks."
+
+msgid "%d task skipped (no planned dates yet)."
+msgid_plural "%d tasks skipped (no planned dates yet)."
+msgstr[0] "%d task skipped (no planned dates yet)."
+msgstr[1] "%d tasks skipped (no planned dates yet)."

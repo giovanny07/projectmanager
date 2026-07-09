@@ -108,9 +108,6 @@ msgstr "Type"
 msgid "Lag"
 msgstr "Lag"
 
-msgid "Done"
-msgstr "Done"
-
 msgid "Plan end"
 msgstr "Planned end"
 
@@ -146,15 +143,6 @@ msgstr "No other tasks in this project"
 
 msgid "Error loading tasks"
 msgstr "Error loading tasks"
-
-msgid "Recalculating..."
-msgstr "Recalculating..."
-
-msgid "Error"
-msgstr "Error"
-
-msgid "Server communication error."
-msgstr "Server communication error."
 
 # ── Baseline ──────────────────────────────────────────────────────────
 msgid "Baseline"

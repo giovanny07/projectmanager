@@ -32,23 +32,6 @@
     50%       { opacity: 0.4; }
 }
 
-/* ── Cascade feedback ─────────────────────────────────────────────── */
-
-/* Reschedule result toast */
-.pm-cascade-toast {
-    position: fixed;
-    top: 4.5rem;
-    right: 1.25rem;
-    z-index: 1090;
-    min-width: 280px;
-    max-width: 400px;
-}
-
-/* Spinner inside the recalculate button */
-.pm-btn-loading .ti {
-    display: none;
-}
-
 /* ── Config page ─────────────────────────────────────────────────── */
 
 /* Module card on the config page */

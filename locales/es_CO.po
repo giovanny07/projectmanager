@@ -108,9 +108,6 @@ msgstr "Tipo"
 msgid "Lag"
 msgstr "Lag"
 
-msgid "Done"
-msgstr "Avance"
-
 msgid "Plan end"
 msgstr "Fin planificado"
 
@@ -146,15 +143,6 @@ msgstr "No hay otras tareas en este proyecto"
 
 msgid "Error loading tasks"
 msgstr "Error cargando tareas"
-
-msgid "Recalculating..."
-msgstr "Recalculando..."
-
-msgid "Error"
-msgstr "Error"
-
-msgid "Server communication error."
-msgstr "Error de comunicación con el servidor."
 
 # ── Baseline ──────────────────────────────────────────────────────────
 msgid "Baseline"

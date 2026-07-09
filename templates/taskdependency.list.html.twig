@@ -1,0 +1,262 @@
+{#
+  Project Manager — taskdependency.list.html.twig
+  Pestaña "Dependencies" en ProjectTask.
+
+  Variables:
+    task         → ProjectTask (objeto GLPI)
+    task_id      → int
+    predecessors → array
+    successors   → array
+    dep_types    → array [code => label]
+    can_write    → bool
+    cascade_auto → bool
+#}
+
+{# ── Header de la pestaña ─────────────────────────────────────────── #}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0 text-muted fw-normal">
+        <i class="ti ti-git-branch me-2 text-primary"></i>
+        {{ __('Task dependencies', 'projectmanager') }}
+    </h5>
+
+    {% if can_write %}
+    <form method="post"
+          action="{{ path('plugins/projectmanager/front/taskdependency.php') }}"
+          class="d-inline">
+        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="projects_id"
+               value="{{ task.fields['projects_id'] }}">
+        <button type="submit" name="reschedule_project" value="1"
+                class="btn btn-sm btn-outline-warning"
+                title="{{ __('Recalculate all project dates based on dependencies', 'projectmanager') }}">
+            <i class="ti ti-refresh me-1"></i>
+            {{ __('Force cascade recalculation', 'projectmanager') }}
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+{% if not cascade_auto %}
+<div class="alert alert-info py-2 mb-3">
+    <i class="ti ti-info-circle me-1"></i>
+    {{ __('Automatic cascade is disabled. Use the button above to recalculate manually.', 'projectmanager') }}
+</div>
+{% endif %}
+
+{# ── Predecesoras ─────────────────────────────────────────────────── #}
+<div class="card mb-3">
+    <div class="card-header d-flex align-items-center gap-2">
+        <i class="ti ti-arrow-left text-primary"></i>
+        <strong>{{ __('Predecessors', 'projectmanager') }}</strong>
+        <span class="badge bg-secondary">{{ predecessors|length }}</span>
+    </div>
+    <div class="card-body p-0">
+        {% if predecessors is empty %}
+            <p class="text-muted text-center py-3 mb-0 small">
+                {{ __('No predecessors — this task can start freely.', 'projectmanager') }}
+            </p>
+        {% else %}
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ __('Task') }}</th>
+                        <th class="text-center" style="width:80px">{{ __('Type') }}</th>
+                        <th class="text-center" style="width:80px">{{ __('Lag') }}</th>
+                        <th class="text-center" style="width:70px">{{ __('Done') }}</th>
+                        <th>{{ __('Plan end') }}</th>
+                        {% if can_write %}<th style="width:50px"></th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for pred in predecessors %}
+                    <tr>
+                        <td>
+                            <a href="{{ path('front/projecttask.form.php') }}?id={{ pred.projecttasks_id_source }}">
+                                {{ pred.source_name }}
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-primary bg-opacity-75">{{ pred.type }}</span>
+                        </td>
+                        <td class="text-center small">
+                            {% if pred.lag_days > 0 %}
+                                <span class="text-warning">+{{ pred.lag_days }}d</span>
+                            {% elseif pred.lag_days < 0 %}
+                                <span class="text-success">{{ pred.lag_days }}d</span>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge
+                                {% if pred.percent_done >= 100 %}bg-success
+                                {% elseif pred.percent_done >= 50 %}bg-primary
+                                {% else %}bg-warning text-dark{% endif %}">
+                                {{ pred.percent_done }}%
+                            </span>
+                        </td>
+                        <td class="small">
+                            {% set end = pred.real_end_date ?: pred.plan_end_date %}
+                            {{ end ? end|date('d/m/Y') : '—' }}
+                            {% if pred.percent_done < 100 and end and end < 'now'|date('Y-m-d H:i:s') %}
+                                <i class="ti ti-alert-triangle text-danger ms-1"
+                                   title="{{ __('Overdue predecessor', 'projectmanager') }}"></i>
+                            {% endif %}
+                        </td>
+                        {% if can_write %}
+                        <td>
+                            <form method="post"
+                                  action="{{ path('plugins/projectmanager/front/taskdependency.php') }}"
+                                  onsubmit="return confirm('{{ __('Remove this dependency?', 'projectmanager') }}')">
+                                <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="id" value="{{ pred.dep_id }}">
+                                <button type="submit" name="purge" value="1"
+                                        class="btn btn-sm btn-link text-danger p-0">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Sucesoras ────────────────────────────────────────────────────── #}
+<div class="card mb-3">
+    <div class="card-header d-flex align-items-center gap-2">
+        <i class="ti ti-arrow-right text-success"></i>
+        <strong>{{ __('Successors', 'projectmanager') }}</strong>
+        <span class="badge bg-secondary">{{ successors|length }}</span>
+    </div>
+    <div class="card-body p-0">
+        {% if successors is empty %}
+            <p class="text-muted text-center py-3 mb-0 small">
+                {{ __('No successors — this task does not block any other.', 'projectmanager') }}
+            </p>
+        {% else %}
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ __('Task') }}</th>
+                        <th class="text-center" style="width:80px">{{ __('Type') }}</th>
+                        <th class="text-center" style="width:80px">{{ __('Lag') }}</th>
+                        <th>{{ __('Plan start') }}</th>
+                        {% if can_write %}<th style="width:50px"></th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for succ in successors %}
+                    <tr>
+                        <td>
+                            <a href="{{ path('front/projecttask.form.php') }}?id={{ succ.projecttasks_id_target }}">
+                                {{ succ.target_name }}
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-success bg-opacity-75">{{ succ.type }}</span>
+                        </td>
+                        <td class="text-center small">
+                            {% if succ.lag_days > 0 %}
+                                <span class="text-warning">+{{ succ.lag_days }}d</span>
+                            {% elseif succ.lag_days < 0 %}
+                                <span class="text-success">{{ succ.lag_days }}d</span>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="small">
+                            {{ succ.plan_start_date ? succ.plan_start_date|date('d/m/Y') : '—' }}
+                        </td>
+                        {% if can_write %}
+                        <td>
+                            <form method="post"
+                                  action="{{ path('plugins/projectmanager/front/taskdependency.php') }}"
+                                  onsubmit="return confirm('{{ __('Remove this dependency?', 'projectmanager') }}')">
+                                <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="id" value="{{ succ.dep_id }}">
+                                <button type="submit" name="purge" value="1"
+                                        class="btn btn-sm btn-link text-danger p-0">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Formulario: agregar dependencia ──────────────────────────────── #}
+{% if can_write %}
+<div class="card border-primary">
+    <div class="card-header bg-primary bg-opacity-10">
+        <strong class="text-primary">
+            <i class="ti ti-plus me-1"></i>
+            {{ __('Add dependency', 'projectmanager') }}
+        </strong>
+    </div>
+    <div class="card-body">
+        <form method="post"
+              action="{{ path('plugins/projectmanager/front/taskdependency.php') }}">
+            <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+            {# Esta tarea es siempre la SUCESORA (target) #}
+            <input type="hidden" name="projecttasks_id_target" value="{{ task_id }}">
+
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold">
+                        {{ __('Predecessor task', 'projectmanager') }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    <select name="projecttasks_id_source"
+                            id="pm-dep-source"
+                            class="form-select form-select-sm" required>
+                        <option value="">{{ __('Loading...', 'projectmanager') }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">{{ __('Type', 'projectmanager') }}</label>
+                    <select name="type" class="form-select form-select-sm">
+                        {% for code, label in dep_types %}
+                            <option value="{{ code }}" {{ code == 'FS' ? 'selected' : '' }}>
+                                {{ code }} — {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">
+                        {{ __('Lag (days)', 'projectmanager') }}
+                    </label>
+                    <input type="number" name="lag_days" value="0"
+                           min="-999" max="999"
+                           class="form-control form-control-sm">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" name="add" value="1"
+                            class="btn btn-primary btn-sm w-100">
+                        <i class="ti ti-link me-1"></i>{{ __('Add', 'projectmanager') }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+$(function () {
+    window.ProjectManager.loadPredecessorSelect({
+        projectId:     {{ task.fields['projects_id']|default(0) }},
+        currentTaskId: {{ task_id }},
+        selectId:      'pm-dep-source',
+        ajaxUrl:       '{{ ajax_url|e('js') }}',
+    });
+});
+</script>
+{% endif %}

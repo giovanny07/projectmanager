@@ -1,0 +1,139 @@
+{#
+  Project Manager — config.form.html.twig
+  Este template se renderiza dentro de una PESTAÑA de CommonGLPI (Config tab).
+  En ese contexto NO se usa header.html.twig ni footer.html.twig —
+  esos son para páginas completas.
+  El form es explícito aquí, con CSRF vía csrf_token() de Twig.
+#}
+
+{% import 'components/form/fields_macros.html.twig' as fields %}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="ti ti-layout-kanban me-2 text-primary"></i>
+            Project Manager
+            <small class="text-muted fw-normal ms-2" style="font-size:0.8rem;">v{{ version }}</small>
+        </h5>
+    </div>
+    <div class="card-body">
+
+        <form name="projectmanager_config" action="{{ action }}" method="post">
+            <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="id" value="{{ id }}">
+
+            {# ── Módulos disponibles ──────────────────────────────────── #}
+            <div class="hr-text">
+                <i class="ti ti-puzzle"></i>
+                <span>{{ __('Available modules', 'projectmanager') }}</span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="card h-100 {{ config.module_dependencies ? 'border-primary' : '' }}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <i class="ti ti-git-branch me-2 text-primary"></i>
+                                        {{ __('Task Dependencies', 'projectmanager') }}
+                                    </h6>
+                                    <p class="text-muted small mb-2">
+                                        {{ __('FS, SS, FF, SF dependencies with automatic cascade rescheduling.', 'projectmanager') }}
+                                    </p>
+                                    <span class="badge bg-success-lt">v1.0.0</span>
+                                </div>
+                                <div class="form-check form-switch ms-3 mt-1">
+                                    <input type="hidden" name="module_dependencies" value="0">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="module_dependencies" value="1"
+                                           {{ config.module_dependencies ? 'checked' : '' }}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100 opacity-50">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-muted">
+                                        <i class="ti ti-alert-triangle me-2"></i>
+                                        {{ __('Risk Management', 'projectmanager') }}
+                                    </h6>
+                                    <p class="text-muted small mb-2">
+                                        {{ __('5x5 risk matrix, scoring, mitigation plans and critical risk alerts.', 'projectmanager') }}
+                                    </p>
+                                    <span class="badge bg-secondary-lt">{{ __('Coming in v1.1.0', 'projectmanager') }}</span>
+                                </div>
+                                <div class="form-check form-switch ms-3 mt-1">
+                                    <input class="form-check-input" type="checkbox" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── Opciones de dependencias ─────────────────────────────── #}
+            <div class="hr-text">
+                <i class="ti ti-git-branch"></i>
+                <span>{{ __('Dependencies — Options', 'projectmanager') }}</span>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="form-check form-switch mt-1">
+                            <input type="hidden" name="cascade_auto" value="0">
+                            <input class="form-check-input" type="checkbox"
+                                   name="cascade_auto" value="1"
+                                   {{ config.cascade_auto ? 'checked' : '' }}>
+                        </div>
+                        <div>
+                            <label class="form-check-label fw-bold">
+                                {{ __('Automatic cascade on task save', 'projectmanager') }}
+                            </label>
+                            <p class="text-muted small mb-0">
+                                {{ __('Propagate delays to all dependent tasks automatically.', 'projectmanager') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="form-check form-switch mt-1">
+                            <input type="hidden" name="cascade_log" value="0">
+                            <input class="form-check-input" type="checkbox"
+                                   name="cascade_log" value="1"
+                                   {{ config.cascade_log ? 'checked' : '' }}>
+                        </div>
+                        <div>
+                            <label class="form-check-label fw-bold">
+                                {{ __('Log cascade changes in GLPI history', 'projectmanager') }}
+                            </label>
+                            <p class="text-muted small mb-0">
+                                {{ __('Each rescheduled task will have an entry in the GLPI history log.', 'projectmanager') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── Guardar ──────────────────────────────────────────────── #}
+            <div class="hstack gap-1">
+                <div class="pe-5 ms-auto">
+                    <button class="btn btn-primary" type="submit" name="update" value="1">
+                        <i class="ti ti-device-floppy me-1"></i>
+                        {{ __('Save configuration', 'projectmanager') }}
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>

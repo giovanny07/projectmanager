@@ -1,0 +1,67 @@
+/**
+ * Project Manager — projectmanager.css
+ *
+ * CSS mínimo. Todo lo visual usa clases nativas de GLPI/Bootstrap 5.
+ * Solo definimos lo que no existe en el framework base.
+ *
+ * Prefijo .pm- en todas las clases propias para evitar colisiones.
+ *
+ * @license AGPL-3.0-or-later
+ */
+
+/* ── Pestaña de dependencias ───────────────────────────────────────── */
+
+/* Badge de tipo de dependencia con ancho fijo para alinear columnas */
+.pm-dep-type-badge {
+    min-width: 2.5rem;
+    text-align: center;
+    font-family: var(--bs-font-monospace, monospace);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+/* Indicador de retraso en predecesora vencida */
+.pm-overdue-icon {
+    color: var(--bs-danger);
+    animation: pm-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pm-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+
+/* ── Feedback de cascada ─────────────────────────────────────────── */
+
+/* Toast de resultado de replanificación */
+.pm-cascade-toast {
+    position: fixed;
+    top: 4.5rem;
+    right: 1.25rem;
+    z-index: 1090;
+    min-width: 280px;
+    max-width: 400px;
+}
+
+/* Spinner dentro del botón de recalcular */
+.pm-btn-loading .ti {
+    display: none;
+}
+
+/* ── Config page ─────────────────────────────────────────────────── */
+
+/* Tarjeta de módulo en la página de configuración */
+.pm-module-card {
+    border-left: 4px solid var(--bs-primary);
+    transition: border-color 0.2s;
+}
+
+.pm-module-card.pm-module-disabled {
+    border-left-color: var(--bs-secondary);
+    opacity: 0.7;
+}
+
+.pm-module-card:hover {
+    border-left-color: var(--bs-info);
+}

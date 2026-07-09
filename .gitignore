@@ -1,0 +1,7 @@
+.claude/
+.vscode/
+.idea/
+*.log
+.DS_Store
+node_modules/
+vendor/

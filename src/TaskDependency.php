@@ -131,6 +131,78 @@ class TaskDependency extends CommonDBTM
         return true;
     }
 
+    // ── Hook: PRE_ITEM_UPDATE en ProjectTask (bloqueo real, opt-in) ───
+
+    /**
+     * Disparado por GLPI ANTES de guardar una ProjectTask. Si
+     * "block_unmet_dependencies" está activo, veta el guardado
+     * (poniendo $item->input = false) cuando la tarea intenta
+     * iniciar/terminar sin que sus predecesoras cumplan la
+     * dependencia (FS/SS/FF/SF). Desactivado por defecto: sin esta
+     * opción, GLPI core solo advierte visualmente, nunca bloquea.
+     */
+    public static function onProjectTaskPreUpdate(\CommonDBTM $item): void
+    {
+        if (!($item instanceof ProjectTask)) {
+            return;
+        }
+
+        if (!Config::isModuleEnabled('dependencies')) {
+            return;
+        }
+
+        if (!(bool)(int)Config::get('block_unmet_dependencies', '0')) {
+            return;
+        }
+
+        if (!is_array($item->input)) {
+            return;
+        }
+
+        $preds = self::getPredecessorsOf($item->getID());
+        if (empty($preds)) {
+            return;
+        }
+
+        $oldPercent = (int)($item->fields['percent_done'] ?? 0);
+        $newPercent = isset($item->input['percent_done'])
+            ? (int)$item->input['percent_done']
+            : $oldPercent;
+
+        $isStarting  = $newPercent > 0 && $oldPercent === 0;
+        $isFinishing = $newPercent >= 100 && $oldPercent < 100;
+
+        if (!$isStarting && !$isFinishing) {
+            return;
+        }
+
+        foreach ($preds as $pred) {
+            $predDone = (int)$pred['percent_done'];
+
+            $violated = match ($pred['type']) {
+                DependencyType::FS => $isStarting && $predDone < 100,
+                DependencyType::SS => $isStarting && $predDone === 0,
+                DependencyType::FF => $isFinishing && $predDone < 100,
+                DependencyType::SF => $isFinishing && $predDone === 0,
+                default             => false,
+            };
+
+            if ($violated) {
+                Session::addMessageAfterRedirect(
+                    sprintf(
+                        __('Cannot save: predecessor "%1$s" does not satisfy the %2$s dependency yet.', 'projectmanager'),
+                        $pred['source_name'],
+                        $pred['type']
+                    ),
+                    false,
+                    ERROR
+                );
+                $item->input = false;
+                return;
+            }
+        }
+    }
+
     // ── Hook: ITEM_UPDATE en ProjectTask ─────────────────────────────
 
     /**
@@ -369,7 +441,7 @@ class TaskDependency extends CommonDBTM
             'SELECT' => [
                 'dep.id AS dep_id', 'dep.projecttasks_id_source',
                 'dep.type', 'dep.lag_days',
-                'task.name AS source_name', 'task.percent_done',
+                'task.name AS source_name', 'task.percent_done', 'task.is_milestone',
                 'task.plan_start_date', 'task.plan_end_date', 'task.real_end_date',
             ],
             'FROM'      => [self::getTable() . ' AS dep'],
@@ -400,7 +472,7 @@ class TaskDependency extends CommonDBTM
             'SELECT' => [
                 'dep.id AS dep_id', 'dep.projecttasks_id_target',
                 'dep.type', 'dep.lag_days',
-                'task.name AS target_name', 'task.percent_done',
+                'task.name AS target_name', 'task.percent_done', 'task.is_milestone',
                 'task.plan_start_date', 'task.plan_end_date',
             ],
             'FROM'      => [self::getTable() . ' AS dep'],

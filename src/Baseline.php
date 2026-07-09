@@ -114,7 +114,8 @@ class Baseline extends CommonDBTM
         $rows = [];
         foreach ($DB->request([
             'SELECT'    => [
-                'task.id', 'task.name', 'task.plan_start_date', 'task.plan_end_date',
+                'task.id', 'task.name', 'task.is_milestone',
+                'task.plan_start_date', 'task.plan_end_date',
                 'b.baseline_start_date', 'b.baseline_end_date',
             ],
             'FROM'      => 'glpi_projecttasks AS task',
@@ -143,6 +144,7 @@ class Baseline extends CommonDBTM
             $rows[] = [
                 'task_id'        => (int)$row['id'],
                 'name'           => $row['name'],
+                'is_milestone'   => (bool)$row['is_milestone'],
                 'baseline_start' => $row['baseline_start_date'],
                 'baseline_end'   => $row['baseline_end_date'],
                 'plan_start'     => $row['plan_start_date'],

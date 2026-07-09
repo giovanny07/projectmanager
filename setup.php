@@ -87,6 +87,10 @@ function plugin_init_projectmanager(): void
         $PLUGIN_HOOKS['item_update']['projectmanager']['ProjectTask'] =
             ['GlpiPlugin\\Projectmanager\\TaskDependency', 'onProjectTaskUpdate'];
 
+        // Bloqueo real (opt-in vía Config::block_unmet_dependencies)
+        $PLUGIN_HOOKS['pre_item_update']['projectmanager']['ProjectTask'] =
+            ['GlpiPlugin\\Projectmanager\\TaskDependency', 'onProjectTaskPreUpdate'];
+
         // Línea base: pestaña en Project
         Plugin::registerClass(
             \GlpiPlugin\Projectmanager\Baseline::class,

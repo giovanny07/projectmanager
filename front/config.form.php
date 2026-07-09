@@ -14,7 +14,7 @@ $config = new Config();
 if (isset($_POST['update'])) {
     $config->check((int)($_POST['id'] ?? 1), UPDATE);
 
-    foreach (['module_dependencies', 'module_risks', 'module_dashboard', 'module_evm', 'cascade_auto', 'cascade_log'] as $key) {
+    foreach (['module_dependencies', 'module_risks', 'module_dashboard', 'module_evm', 'cascade_auto', 'cascade_log', 'block_unmet_dependencies'] as $key) {
         $_POST[$key] = (int)($_POST[$key] ?? 0) === 1 ? 1 : 0;
     }
 

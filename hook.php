@@ -98,7 +98,17 @@ function plugin_projectmanager_install(): bool
     // por defecto; el admin los habilita en Administration > Profiles).
     // Sin esto las pestañas "Dependencies"/"Baseline" no aparecen para nadie,
     // ni Super-Admin.
-    ProfileRight::addProfileRights([TaskDependency::$rightname, Baseline::$rightname]);
+    // ProfileRight::addProfileRights() NO es idempotente (INSERT sin
+    // verificar existencia) — install() puede volver a ejecutarse (p.ej.
+    // `plugin:install --force`), así que solo pedimos los derechos que
+    // todavía no tengan ninguna fila, o revienta con clave duplicada.
+    $newRights = array_filter(
+        [TaskDependency::$rightname, Baseline::$rightname],
+        static fn ($right) => !countElementsInTable('glpi_profilerights', ['name' => $right])
+    );
+    if (!empty($newRights)) {
+        ProfileRight::addProfileRights(array_values($newRights));
+    }
 
     $migration->executeMigration();
 

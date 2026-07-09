@@ -71,6 +71,9 @@
                 {% for pred in predecessors %}
                     <tr>
                         <td>
+                            {% if pred.is_milestone %}
+                                <i class="ti ti-flag-3 text-warning me-1" title="{{ __('Milestone', 'projectmanager') }}"></i>
+                            {% endif %}
                             <a href="{{ path('front/projecttask.form.php') }}?id={{ pred.projecttasks_id_source }}">
                                 {{ pred.source_name }}
                             </a>
@@ -150,6 +153,9 @@
                 {% for succ in successors %}
                     <tr>
                         <td>
+                            {% if succ.is_milestone %}
+                                <i class="ti ti-flag-3 text-warning me-1" title="{{ __('Milestone', 'projectmanager') }}"></i>
+                            {% endif %}
                             <a href="{{ path('front/projecttask.form.php') }}?id={{ succ.projecttasks_id_target }}">
                                 {{ succ.target_name }}
                             </a>

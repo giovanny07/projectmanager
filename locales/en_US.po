@@ -201,3 +201,17 @@ msgid "%d task skipped (no planned dates yet)."
 msgid_plural "%d tasks skipped (no planned dates yet)."
 msgstr[0] "%d task skipped (no planned dates yet)."
 msgstr[1] "%d tasks skipped (no planned dates yet)."
+
+# ── Real dependency blocking ────────────────────────────────────────────
+msgid "Block tasks with unmet dependencies"
+msgstr "Block tasks with unmet dependencies"
+
+msgid "Prevent starting/finishing a task until its predecessors satisfy the FS/SS/FF/SF dependency, instead of only warning."
+msgstr "Prevent starting/finishing a task until its predecessors satisfy the FS/SS/FF/SF dependency, instead of only warning."
+
+msgid "Cannot save: predecessor \"%1$s\" does not satisfy the %2$s dependency yet."
+msgstr "Cannot save: predecessor \"%1$s\" does not satisfy the %2$s dependency yet."
+
+# ── Milestones ────────────────────────────────────────────────────────
+msgid "Milestone"
+msgstr "Milestone"

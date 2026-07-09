@@ -67,18 +67,28 @@ class Config extends CommonDBTM
 
         if (!$DB->tableExists($table)) {
             $DB->doQuery("CREATE TABLE `{$table}` (
-                `id`                  int {$sign} NOT NULL,
-                `module_dependencies` tinyint NOT NULL DEFAULT 0,
-                `module_risks`        tinyint NOT NULL DEFAULT 0,
-                `module_dashboard`    tinyint NOT NULL DEFAULT 0,
-                `module_evm`          tinyint NOT NULL DEFAULT 0,
-                `cascade_auto`        tinyint NOT NULL DEFAULT 1,
-                `cascade_log`         tinyint NOT NULL DEFAULT 1,
-                `date_mod`            timestamp NULL DEFAULT NULL,
+                `id`                         int {$sign} NOT NULL,
+                `module_dependencies`        tinyint NOT NULL DEFAULT 0,
+                `module_risks`               tinyint NOT NULL DEFAULT 0,
+                `module_dashboard`           tinyint NOT NULL DEFAULT 0,
+                `module_evm`                 tinyint NOT NULL DEFAULT 0,
+                `cascade_auto`               tinyint NOT NULL DEFAULT 1,
+                `cascade_log`                tinyint NOT NULL DEFAULT 1,
+                `block_unmet_dependencies`   tinyint NOT NULL DEFAULT 0,
+                `date_mod`                   timestamp NULL DEFAULT NULL,
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation} ROW_FORMAT=DYNAMIC");
 
             $DB->doQuery("INSERT INTO `{$table}` (id, date_mod) VALUES (1, NOW())");
+        } elseif (!$DB->fieldExists($table, 'block_unmet_dependencies')) {
+            // Migración: instalaciones existentes no tienen esta columna todavía.
+            $migration->addField(
+                $table,
+                'block_unmet_dependencies',
+                'tinyint',
+                ['value' => 0, 'after' => 'cascade_log']
+            );
+            $migration->migrationOneTable($table);
         }
     }
 

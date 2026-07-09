@@ -62,6 +62,9 @@
                 {% for row in rows %}
                     <tr>
                         <td>
+                            {% if row.is_milestone %}
+                                <i class="ti ti-flag-3 text-warning me-1" title="{{ __('Milestone', 'projectmanager') }}"></i>
+                            {% endif %}
                             <a href="{{ path('front/projecttask.form.php') }}?id={{ row.task_id }}">
                                 {{ row.name }}
                             </a>

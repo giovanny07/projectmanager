@@ -121,6 +121,25 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="form-check form-switch mt-1">
+                            <input type="hidden" name="block_unmet_dependencies" value="0">
+                            <input class="form-check-input" type="checkbox"
+                                   name="block_unmet_dependencies" value="1"
+                                   {{ config.block_unmet_dependencies ? 'checked' : '' }}>
+                        </div>
+                        <div>
+                            <label class="form-check-label fw-bold">
+                                {{ __('Block tasks with unmet dependencies', 'projectmanager') }}
+                            </label>
+                            <p class="text-muted small mb-0">
+                                {{ __('Prevent starting/finishing a task until its predecessors satisfy the FS/SS/FF/SF dependency, instead of only warning.', 'projectmanager') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {# ── Guardar ──────────────────────────────────────────────── #}

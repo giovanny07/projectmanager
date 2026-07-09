@@ -4,7 +4,7 @@
  * Project Manager — front/config.form.php
  * Solo procesa POST del formulario de configuración y redirige.
  *
- * @license AGPL-3.0-or-later
+ * @license GPL-3.0-or-later
  */
 
 use GlpiPlugin\Projectmanager\Config;

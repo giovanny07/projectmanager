@@ -6,7 +6,7 @@
  *
  * Patrón TECLIB: $AJAX_INCLUDE = 1 + Session::checkLoginUser()
  *
- * @license AGPL-3.0-or-later
+ * @license GPL-3.0-or-later
  */
 
 $AJAX_INCLUDE = 1;

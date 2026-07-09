@@ -7,8 +7,8 @@
  *
  * @author    IMAGUNET S.A.S. <dev@imagunet.com>
  * @copyright 2026 IMAGUNET S.A.S.
- * @license   AGPL-3.0-or-later
- * @link      https://github.com/imagunet/glpi-projectmanager
+ * @license   GPL-3.0-or-later
+ * @link      https://github.com/giovanny07/projectmanager
  */
 
 define('PLUGIN_PROJECTMANAGER_VERSION',  '1.0.0');
@@ -21,8 +21,8 @@ function plugin_version_projectmanager(): array
         'name'         => 'Project Manager',
         'version'      => PLUGIN_PROJECTMANAGER_VERSION,
         'author'       => 'IMAGUNET S.A.S.',
-        'license'      => 'AGPL-3.0-or-later',
-        'homepage'     => 'https://github.com/imagunet/glpi-projectmanager',
+        'license'      => 'GPL-3.0-or-later',
+        'homepage'     => 'https://github.com/giovanny07/projectmanager',
         'requirements' => [
             'glpi' => [
                 'min' => PLUGIN_PROJECTMANAGER_MIN_GLPI,

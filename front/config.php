@@ -9,7 +9,7 @@
  * No include() needed — LegacyFileLoadController bootstraps the environment
  * before invoking any file under front/ in GLPI 11.
  *
- * @license AGPL-3.0-or-later
+ * @license GPL-3.0-or-later
  */
 
 use GlpiPlugin\Projectmanager\Config;

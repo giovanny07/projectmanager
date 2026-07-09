@@ -4,7 +4,7 @@
  * Project Manager — ajax/get_project_tasks.php
  * Patrón splitcat/gantt (TECLIB): Session::checkLoginUser() + Html::header_nocache()
  *
- * @license AGPL-3.0-or-later
+ * @license GPL-3.0-or-later
  */
 
 Session::checkLoginUser();
@@ -15,25 +15,15 @@ Html::header_nocache();
 $projectId     = (int)($_REQUEST['projects_id']     ?? 0);
 $excludeTaskId = (int)($_REQUEST['exclude_task_id'] ?? 0);
 
-// Debug temporal — retornar los parámetros recibidos para diagnóstico
 if ($projectId <= 0) {
-    echo json_encode([
-        'tasks'  => [],
-        'debug'  => [
-            'received_GET'  => $_GET,
-            'received_POST' => $_POST,
-            'projectId'     => $projectId,
-        ],
-    ]);
+    echo json_encode(['tasks' => []]);
     exit;
 }
 
 $project = new Project();
 if (!$project->can($projectId, READ)) {
-    echo json_encode([
-        'tasks' => [],
-        'debug' => ['error' => 'cannot_read_project', 'projectId' => $projectId],
-    ]);
+    http_response_code(403);
+    echo json_encode(['tasks' => []]);
     exit;
 }
 
@@ -41,7 +31,7 @@ global $DB;
 $tasks = [];
 
 foreach ($DB->request([
-    'SELECT' => ['id', 'name', 'percent_done', 'plan_end_date'],
+    'SELECT' => ['id', 'name', 'percent_done', 'plan_start_date', 'plan_end_date'],
     'FROM'   => 'glpi_projecttasks',
     'WHERE'  => [
         'projects_id' => $projectId,

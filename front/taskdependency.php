@@ -5,7 +5,7 @@ include('../../../inc/includes.php');
  * Project Manager — front/taskdependency.php
  * Controlador CRUD para dependencias entre tareas.
  *
- * @license AGPL-3.0-or-later
+ * @license GPL-3.0-or-later
  */
 
 use GlpiPlugin\Projectmanager\TaskDependency;
@@ -13,9 +13,9 @@ use GlpiPlugin\Projectmanager\Config;
 
 
 // Verificaciones de seguridad
-Session::checkCSRF($_POST);
-Plugin::checkPluginState('projectmanager');
 Session::checkLoginUser();
+Plugin::checkPluginState('projectmanager');
+Session::checkCSRF($_POST);
 
 if (!Config::isModuleEnabled('dependencies')) {
     Html::displayErrorAndDie(__('Dependencies module is not enabled.', 'projectmanager'));
@@ -30,7 +30,7 @@ if (isset($_POST['add'])) {
     $dep->add([
         'projecttasks_id_source' => (int)$_POST['projecttasks_id_source'],
         'projecttasks_id_target' => (int)$_POST['projecttasks_id_target'],
-        'type'                   => Toolbox::cleanTarget($_POST['type'] ?? 'FS'),
+        'type'                   => $_POST['type'] ?? 'FS',
         'lag_days'               => (int)($_POST['lag_days'] ?? 0),
     ]);
 

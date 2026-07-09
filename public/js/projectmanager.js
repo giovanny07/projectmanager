@@ -2,7 +2,7 @@
  * Project Manager — projectmanager.js + dependency_ui.js
  * Namespace global y lógica de UI para dependencias.
  *
- * @license AGPL-3.0-or-later
+ * @license GPL-3.0-or-later
  */
 
 /* global CFG_GLPI */
@@ -18,6 +18,7 @@ window.ProjectManager = window.ProjectManager || {};
  * @param {number} opts.projectId
  * @param {number} opts.currentTaskId  Tarea a excluir (la actual)
  * @param {string} opts.selectId       ID del elemento <select>
+ * @param {string} [opts.ajaxUrl]      URL del endpoint (calculada en PHP vía Plugin::getWebDir)
  */
 window.ProjectManager.loadPredecessorSelect = function (opts) {
     const sel = document.getElementById(opts.selectId);
@@ -31,7 +32,9 @@ window.ProjectManager.loadPredecessorSelect = function (opts) {
         _glpi_csrf_token: window.glpiCsrfToken || '',
     });
 
-    fetch(`${CFG_GLPI.root_doc}/plugins/projectmanager/ajax/get_project_tasks.php`, {
+    const url = opts.ajaxUrl || `${CFG_GLPI.root_doc}/plugins/projectmanager/ajax/get_project_tasks.php`;
+
+    fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body,

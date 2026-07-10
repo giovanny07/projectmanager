@@ -20,32 +20,6 @@ use Toolbox;
 use Log;
 
 /**
- * Dependency types between project tasks.
- */
-final class DependencyType
-{
-    const FS = 'FS'; // Finish-to-Start  (most common)
-    const SS = 'SS'; // Start-to-Start
-    const FF = 'FF'; // Finish-to-Finish
-    const SF = 'SF'; // Start-to-Finish  (rare)
-
-    public static function getAll(): array
-    {
-        return [
-            self::FS => __('Finish-to-Start (FS)', 'projectmanager'),
-            self::SS => __('Start-to-Start (SS)',  'projectmanager'),
-            self::FF => __('Finish-to-Finish (FF)', 'projectmanager'),
-            self::SF => __('Start-to-Finish (SF)', 'projectmanager'),
-        ];
-    }
-
-    public static function isValid(string $type): bool
-    {
-        return in_array($type, [self::FS, self::SS, self::FF, self::SF], true);
-    }
-}
-
-/**
  * Manages dependencies between project tasks.
  *
  * Responsibilities:
@@ -341,7 +315,7 @@ class TaskDependency extends CommonDBTM
         if (count($topoOrder) < count($nodesWithDeps)) {
             $msg = __('Cycle detected in project dependencies. Cascade aborted.', 'projectmanager');
             $result['errors'][] = $msg;
-            Toolbox::logError("ProjectManager: cycle in project #{$projectId}");
+            Toolbox::logInFile('php-errors', "ProjectManager: cycle in project #{$projectId}\n");
             return $result;
         }
 

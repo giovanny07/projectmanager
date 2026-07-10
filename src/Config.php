@@ -37,6 +37,18 @@ class Config extends CommonDBTM
         return self::$_instance;
     }
 
+    /**
+     * Clears the cached singleton so the next getInstance() re-reads the
+     * DB. Production code never needs this (one request = one process =
+     * config never changes mid-request); it exists for tests, where a
+     * single long-lived process boots GLPI once and then needs to
+     * exercise several different config values.
+     */
+    public static function resetInstance(): void
+    {
+        self::$_instance = null;
+    }
+
     // ── Metadata ─────────────────────────────────────────────────────────
 
     public static function getTypeName($nb = 0): string

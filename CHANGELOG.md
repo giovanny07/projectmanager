@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+## [1.2.0] - 2026-07-10
+
+### Added
+
+- CI/CD release pipeline (`.github/workflows/release.yml` + `scripts/release.sh`): pushing a `vX.Y.Z` tag packages the plugin with `git archive` (rooted at `projectmanager/`, runtime files only) and publishes the zip to `s3://imagu-binaries/glpi-projectmanager/`, updating a semver-sorted `manifest.json`. AWS auth is via GitHub OIDC (`vars.AWS_ROLE_ARN`) — no stored secrets.
+- `.github/workflows/package.yml`: fast CI guards that verify the release zip builds cleanly (and contains `setup.php`/`hook.php`/`src/`/`ajax/`/`templates/`) and that the version in `setup.php` matches `plugin.xml`, catching packaging and version-drift issues before a tag.
+- `scripts/install.sh`: self-contained `curl … | bash` end-user installer that auto-detects the GLPI plugins directory and drops the versioned zip in, with `VERSION` / `PLUGINS_DIR` / `UNINSTALL` overrides.
+- `scripts/deploy.sh`: local dev deployment (rsync into a GLPI install, then `plugin:install`/`plugin:activate`).
+- `CICD.md`: documents the pipeline, the S3/OIDC distribution model, and the SemVer tagging/release procedure. `scripts/scripts.md` documents the three scripts.
+
 ## [1.1.1]
 
 ### Added

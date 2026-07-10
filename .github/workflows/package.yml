@@ -1,0 +1,70 @@
+name: Package
+
+# Lightweight guards that complement tests.yml: prove the release zip builds
+# cleanly and that the version stays consistent across setup.php and plugin.xml
+# BEFORE a v*.*.* tag ever triggers a real release.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  package-verify:
+    name: Verify plugin zip builds cleanly
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build zip
+        run: |
+          mkdir -p dist
+          git archive \
+            --format=zip \
+            --prefix=projectmanager/ \
+            HEAD \
+            setup.php hook.php src/ front/ ajax/ templates/ locales/ public/ plugin.xml LICENSE \
+            -o dist/projectmanager-ci.zip
+
+          echo "Zip contents:"
+          unzip -l dist/projectmanager-ci.zip
+
+          for required in \
+            projectmanager/setup.php \
+            projectmanager/hook.php \
+            projectmanager/src/ \
+            projectmanager/ajax/ \
+            projectmanager/templates/; do
+            if ! unzip -l dist/projectmanager-ci.zip | grep -q "$required"; then
+              echo "ERROR: '$required' missing from zip."
+              exit 1
+            fi
+          done
+          echo "Zip verification passed."
+
+  version-consistency:
+    name: setup.php and plugin.xml versions match
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare versions
+        run: |
+          SETUP_VERSION=$(grep -oP "define\('PLUGIN_PROJECTMANAGER_VERSION',\s*'\K[0-9]+\.[0-9]+\.[0-9]+" setup.php)
+          XML_VERSION=$(grep -oP '<num>\K[0-9]+\.[0-9]+\.[0-9]+' plugin.xml | head -n1)
+
+          echo "setup.php   : ${SETUP_VERSION:-<none>}"
+          echo "plugin.xml  : ${XML_VERSION:-<none>}"
+
+          if [[ -z "$SETUP_VERSION" || -z "$XML_VERSION" ]]; then
+            echo "ERROR: could not read a version from setup.php or plugin.xml."
+            exit 1
+          fi
+          if [[ "$SETUP_VERSION" != "$XML_VERSION" ]]; then
+            echo "ERROR: version drift — setup.php ($SETUP_VERSION) != plugin.xml ($XML_VERSION)."
+            echo "Bump both to the same value before tagging a release."
+            exit 1
+          fi
+          echo "Versions are consistent."

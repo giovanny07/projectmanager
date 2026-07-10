@@ -96,6 +96,12 @@ function plugin_init_projectmanager(): void
             \GlpiPlugin\Projectmanager\Baseline::class,
             ['addtabon' => \Project::class]
         );
+
+        // Critical path (CPM): tab on Project
+        Plugin::registerClass(
+            \GlpiPlugin\Projectmanager\CriticalPath::class,
+            ['addtabon' => \Project::class]
+        );
     }
 }
 

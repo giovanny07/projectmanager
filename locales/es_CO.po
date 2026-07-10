@@ -203,3 +203,28 @@ msgstr "No se puede guardar: la predecesora \"%1$s\" aún no cumple la dependenc
 # ── Milestones ────────────────────────────────────────────────────────
 msgid "Milestone"
 msgstr "Hito"
+
+# ── Critical path ─────────────────────────────────────────────────────
+msgid "Critical path"
+msgstr "Ruta crítica"
+
+msgid "Tasks with zero float (highlighted) determine the project's overall duration — any delay on them delays the whole project."
+msgstr "Las tareas con holgura cero (resaltadas) determinan la duración total del proyecto — cualquier atraso en ellas atrasa todo el proyecto."
+
+msgid "Early start"
+msgstr "Inicio temprano"
+
+msgid "Early finish"
+msgstr "Fin temprano"
+
+msgid "Late start"
+msgstr "Inicio tardío"
+
+msgid "Late finish"
+msgstr "Fin tardío"
+
+msgid "Float (days)"
+msgstr "Holgura (días)"
+
+msgid "Critical"
+msgstr "Crítica"

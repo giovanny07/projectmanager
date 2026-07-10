@@ -1,0 +1,76 @@
+{#
+  Project Manager — criticalpath.html.twig
+  "Critical path" tab on Project.
+
+  Variables:
+    rows           → array of CPM results per task (see CriticalPath::computeForProject)
+    cycle_detected → bool
+#}
+
+<div class="d-flex align-items-center mb-3">
+    <h5 class="mb-0 text-muted fw-normal">
+        <i class="ti ti-route me-2 text-primary"></i>
+        {{ __('Critical path', 'projectmanager') }}
+    </h5>
+</div>
+
+{% if cycle_detected %}
+<div class="alert alert-danger py-2 mb-3">
+    <i class="ti ti-alert-triangle me-1"></i>
+    {{ __('Cycle detected in project dependencies. Cascade aborted.', 'projectmanager') }}
+</div>
+{% elseif rows is empty %}
+<p class="text-muted text-center py-3 mb-0 small">
+    {{ __('This project has no tasks yet.', 'projectmanager') }}
+</p>
+{% else %}
+<div class="alert alert-info py-2 mb-3">
+    <i class="ti ti-info-circle me-1"></i>
+    {{ __('Tasks with zero float (highlighted) determine the project\'s overall duration — any delay on them delays the whole project.', 'projectmanager') }}
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-sm table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>{{ __('Task') }}</th>
+                    <th>{{ __('Early start', 'projectmanager') }}</th>
+                    <th>{{ __('Early finish', 'projectmanager') }}</th>
+                    <th>{{ __('Late start', 'projectmanager') }}</th>
+                    <th>{{ __('Late finish', 'projectmanager') }}</th>
+                    <th class="text-center">{{ __('Float (days)', 'projectmanager') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in rows %}
+                <tr class="{{ row.is_critical ? 'table-danger' : '' }}">
+                    <td>
+                        {% if row.is_milestone %}
+                            <i class="ti ti-flag-3 text-warning me-1" title="{{ __('Milestone', 'projectmanager') }}"></i>
+                        {% endif %}
+                        <a href="{{ path('front/projecttask.form.php') }}?id={{ row.task_id }}">
+                            {{ row.name }}
+                        </a>
+                        {% if row.is_critical %}
+                            <span class="badge bg-danger-lt ms-1">{{ __('Critical', 'projectmanager') }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">{{ row.es|date('d/m/Y') }}</td>
+                    <td class="small">{{ row.ef|date('d/m/Y') }}</td>
+                    <td class="small">{{ row.ls|date('d/m/Y') }}</td>
+                    <td class="small">{{ row.lf|date('d/m/Y') }}</td>
+                    <td class="text-center">
+                        {% if row.is_critical %}
+                            <span class="badge bg-danger-lt">0</span>
+                        {% else %}
+                            {{ row.float_days }}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}

@@ -203,3 +203,28 @@ msgstr "Cannot save: predecessor \"%1$s\" does not satisfy the %2$s dependency y
 # ── Milestones ────────────────────────────────────────────────────────
 msgid "Milestone"
 msgstr "Milestone"
+
+# ── Critical path ─────────────────────────────────────────────────────
+msgid "Critical path"
+msgstr "Critical path"
+
+msgid "Tasks with zero float (highlighted) determine the project's overall duration — any delay on them delays the whole project."
+msgstr "Tasks with zero float (highlighted) determine the project's overall duration — any delay on them delays the whole project."
+
+msgid "Early start"
+msgstr "Early start"
+
+msgid "Early finish"
+msgstr "Early finish"
+
+msgid "Late start"
+msgstr "Late start"
+
+msgid "Late finish"
+msgstr "Late finish"
+
+msgid "Float (days)"
+msgstr "Float (days)"
+
+msgid "Critical"
+msgstr "Critical"

@@ -248,76 +248,19 @@ class TaskDependency extends CommonDBTM
         $result = ['rescheduled' => 0, 'errors' => []];
         $logEnabled = (bool)(int)Config::get('cascade_log', '1');
 
-        // 1. Load the project's tasks
-        $tasksData = [];
-        foreach ($DB->request([
-            'FROM'  => 'glpi_projecttasks',
-            'WHERE' => ['projects_id' => $projectId, 'is_deleted' => 0],
-        ]) as $row) {
-            $tasksData[(int)$row['id']] = $row;
-        }
-
-        if (count($tasksData) < 2) {
+        $graph = self::buildDependencyGraph($projectId);
+        if (count($graph['tasksData']) < 2) {
             return $result; // Not enough tasks for a cascade to be possible
         }
-
-        $taskIds = array_keys($tasksData);
-
-        // 2. Load dependencies between this project's tasks
-        $adjacency = []; // source → [target, ...]
-        $reverse   = []; // target → [{source, type, lag}, ...]
-        $inDegree  = array_fill_keys($taskIds, 0);
-
-        foreach ($DB->request([
-            'FROM'  => self::getTable(),
-            'WHERE' => ['projecttasks_id_source' => $taskIds, 'is_deleted' => 0],
-        ]) as $dep) {
-            $src = (int)$dep['projecttasks_id_source'];
-            $tgt = (int)$dep['projecttasks_id_target'];
-
-            // Only dependencies between tasks of this same project
-            if (!isset($tasksData[$src], $tasksData[$tgt])) {
-                continue;
-            }
-
-            $adjacency[$src][] = $tgt;
-            $reverse[$tgt][]   = [
-                'source' => $src,
-                'type'   => $dep['type'],
-                'lag'    => (int)$dep['lag_days'],
-            ];
-            $inDegree[$tgt]++;
-        }
-
-        // 3. Kahn's algorithm: topological order + cycle detection
-        $queue = [];
-        foreach ($inDegree as $id => $deg) {
-            if ($deg === 0) {
-                $queue[] = $id;
-            }
-        }
-
-        $topoOrder = [];
-        while (!empty($queue)) {
-            $cur = array_shift($queue);
-            $topoOrder[] = $cur;
-            foreach ($adjacency[$cur] ?? [] as $neighbor) {
-                if (--$inDegree[$neighbor] === 0) {
-                    $queue[] = $neighbor;
-                }
-            }
-        }
-
-        // If not every node with dependencies was processed → cycle
-        $nodesWithDeps = array_unique(
-            array_merge(array_keys($adjacency), array_keys($reverse))
-        );
-        if (count($topoOrder) < count($nodesWithDeps)) {
-            $msg = __('Cycle detected in project dependencies. Cascade aborted.', 'projectmanager');
-            $result['errors'][] = $msg;
+        if ($graph['topoOrder'] === null) {
+            $result['errors'][] = __('Cycle detected in project dependencies. Cascade aborted.', 'projectmanager');
             Toolbox::logInFile('php-errors', "ProjectManager: cycle in project #{$projectId}\n");
             return $result;
         }
+
+        $tasksData = $graph['tasksData'];
+        $reverse   = $graph['reverse'];
+        $topoOrder = $graph['topoOrder'];
 
         // 4. Compute earliest start in topological order
         $earlyStart = [];
@@ -408,6 +351,92 @@ class TaskDependency extends CommonDBTM
         }
 
         return $result;
+    }
+
+    /**
+     * Loads a project's tasks and dependencies and runs Kahn's algorithm
+     * to get a topological order — the shared first half of both
+     * rescheduleProject() and CriticalPath's forward/backward pass.
+     *
+     * @return array{
+     *     tasksData: array<int, array>,
+     *     adjacency: array<int, int[]>,
+     *     reverse: array<int, array{source: int, type: string, lag: int}[]>,
+     *     topoOrder: ?int[]
+     * } topoOrder is null when the dependency graph contains a cycle.
+     */
+    public static function buildDependencyGraph(int $projectId): array
+    {
+        global $DB;
+
+        $tasksData = [];
+        foreach ($DB->request([
+            'FROM'  => 'glpi_projecttasks',
+            'WHERE' => ['projects_id' => $projectId, 'is_deleted' => 0],
+        ]) as $row) {
+            $tasksData[(int)$row['id']] = $row;
+        }
+
+        $taskIds = array_keys($tasksData);
+
+        $adjacency = []; // source → [target, ...]
+        $reverse   = []; // target → [{source, type, lag}, ...]
+        $inDegree  = array_fill_keys($taskIds, 0);
+
+        foreach ($DB->request([
+            'FROM'  => self::getTable(),
+            'WHERE' => ['projecttasks_id_source' => $taskIds, 'is_deleted' => 0],
+        ]) as $dep) {
+            $src = (int)$dep['projecttasks_id_source'];
+            $tgt = (int)$dep['projecttasks_id_target'];
+
+            // Only dependencies between tasks of this same project
+            if (!isset($tasksData[$src], $tasksData[$tgt])) {
+                continue;
+            }
+
+            $adjacency[$src][] = $tgt;
+            $reverse[$tgt][]   = [
+                'source' => $src,
+                'type'   => $dep['type'],
+                'lag'    => (int)$dep['lag_days'],
+            ];
+            $inDegree[$tgt]++;
+        }
+
+        // Kahn's algorithm: topological order + cycle detection
+        $queue = [];
+        foreach ($inDegree as $id => $deg) {
+            if ($deg === 0) {
+                $queue[] = $id;
+            }
+        }
+
+        $topoOrder = [];
+        while (!empty($queue)) {
+            $cur = array_shift($queue);
+            $topoOrder[] = $cur;
+            foreach ($adjacency[$cur] ?? [] as $neighbor) {
+                if (--$inDegree[$neighbor] === 0) {
+                    $queue[] = $neighbor;
+                }
+            }
+        }
+
+        // If not every node with dependencies was processed → cycle
+        $nodesWithDeps = array_unique(
+            array_merge(array_keys($adjacency), array_keys($reverse))
+        );
+        if (count($topoOrder) < count($nodesWithDeps)) {
+            $topoOrder = null;
+        }
+
+        return [
+            'tasksData' => $tasksData,
+            'adjacency' => $adjacency,
+            'reverse'   => $reverse,
+            'topoOrder' => $topoOrder,
+        ];
     }
 
     // ── Graph queries ──────────────────────────────────────────────────
@@ -570,13 +599,13 @@ class TaskDependency extends CommonDBTM
         return $input;
     }
 
-    // ── Private helper ───────────────────────────────────────────────
+    // ── Shared helper ────────────────────────────────────────────────
 
     /**
      * Planned duration of a task in seconds.
      * Uses plan_start_date / plan_end_date; falls back to planned_duration (minutes).
      */
-    private static function durationSeconds(array $task): int
+    public static function durationSeconds(array $task): int
     {
         if ($task['plan_start_date'] && $task['plan_end_date']) {
             return max(0, strtotime($task['plan_end_date']) - strtotime($task['plan_start_date']));

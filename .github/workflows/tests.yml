@@ -77,7 +77,7 @@ jobs:
         run: |
           php bin/console database:configure -n --reconfigure \
             --db-host=127.0.0.1 --db-port=3306 --db-user=root --db-password=root --db-name=glpitest
-          php bin/console database:install -n \
+          php bin/console database:install -n --reconfigure \
             --db-host=127.0.0.1 --db-port=3306 --db-user=root --db-password=root --db-name=glpitest \
             --default-language=en_GB --no-telemetry
 

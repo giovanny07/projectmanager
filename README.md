@@ -1,5 +1,7 @@
 # Project Manager
 
+[![Tests](https://github.com/giovanny07/projectmanager/actions/workflows/tests.yml/badge.svg)](https://github.com/giovanny07/projectmanager/actions/workflows/tests.yml)
+
 Advanced project scheduling for [GLPI](https://glpi-project.org) 11: task dependencies with automatic cascade rescheduling, a schedule baseline to track variance, and optional real enforcement of dependency order — the parts PMI-style schedule management needs that GLPI core's Project/ProjectTask module doesn't cover on its own.
 
 ## Requirements

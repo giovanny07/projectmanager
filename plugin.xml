@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+   <name>Project Manager</name>
+   <key>projectmanager</key>
+   <state>stable</state>
+   <logo>https://raw.githubusercontent.com/giovanny07/projectmanager/main/plugin-icon.png</logo>
+   <description>
+      <short>
+         <en><![CDATA[Task dependencies with cascade rescheduling, schedule baseline, critical path, and optional real enforcement of dependency order.]]></en>
+         <es><![CDATA[Dependencias entre tareas con replanificación en cascada, línea base de cronograma, ruta crítica y bloqueo real opcional de dependencias.]]></es>
+      </short>
+      <long>
+         <en><![CDATA[Advanced project scheduling for GLPI 11. Adds FS/SS/FF/SF task dependencies with automatic cascade rescheduling, a schedule baseline to track variance over time, Critical Path Method (CPM) analysis, optional real enforcement of dependency order (GLPI core only warns), and milestone flags — the parts of PMI-style schedule management that GLPI core's Project/ProjectTask module doesn't cover on its own.]]></en>
+         <es><![CDATA[Gestión avanzada de cronogramas para GLPI 11. Agrega dependencias entre tareas (FS/SS/FF/SF) con replanificación automática en cascada, línea base de cronograma para medir varianza en el tiempo, análisis de ruta crítica (CPM), bloqueo real opcional de dependencias (el core de GLPI solo advierte), e hitos — las piezas de gestión de cronograma al estilo PMI que el módulo Project/ProjectTask del core de GLPI no cubre por sí solo.]]></es>
+      </long>
+   </description>
+   <homepage>https://github.com/giovanny07/projectmanager</homepage>
+   <download>https://github.com/giovanny07/projectmanager/releases</download>
+   <issues>https://github.com/giovanny07/projectmanager/issues</issues>
+   <readme>https://github.com/giovanny07/projectmanager/blob/main/README.md</readme>
+   <authors>
+      <author>IMAGUNET S.A.S.</author>
+   </authors>
+   <versions>
+      <version>
+         <num>1.1.0</num>
+         <compatibility>&gt;=11.0.0 &lt;12.0.0</compatibility>
+         <download_url>https://github.com/giovanny07/projectmanager/archive/refs/tags/v1.1.0.tar.gz</download_url>
+      </version>
+      <version>
+         <num>1.0.0</num>
+         <compatibility>&gt;=11.0.0 &lt;12.0.0</compatibility>
+         <download_url>https://github.com/giovanny07/projectmanager/archive/refs/tags/v1.0.0.tar.gz</download_url>
+      </version>
+   </versions>
+   <tags>
+      <en>
+         <tag>project management</tag>
+         <tag>scheduling</tag>
+         <tag>gantt</tag>
+         <tag>dependencies</tag>
+         <tag>critical path</tag>
+         <tag>pmi</tag>
+         <tag>pmbok</tag>
+      </en>
+      <es>
+         <tag>gestión de proyectos</tag>
+         <tag>cronograma</tag>
+         <tag>dependencias</tag>
+         <tag>ruta crítica</tag>
+      </es>
+   </tags>
+</root>

@@ -4,6 +4,24 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.0]
+
+### Added
+
+- Critical path (`CriticalPath`): a "Critical path" tab on `Project` running the standard CPM forward/backward pass (early/late start/finish, float) over the dependency graph, honoring FS/SS/FF/SF and lag on both passes. Tasks with zero float are flagged critical. No new table — it's a pure computation over `TaskDependency`'s existing data, reusing its right rather than adding a new one to configure.
+- A PHPUnit test suite (25 tests): dependency cycle detection/rejection, the cascade engine's date math per dependency type, baseline capture and variance, opt-in blocking (including the `SS` "only needs the predecessor started" case), critical-path float computation (linear chain, parallel branch with slack, isolated task, cycle handling), and `Config`'s default-value fallback. GLPI 11's release build ships neither `tests/` nor PHPUnit, so this plugin bootstraps its own — see the Testing section in README.md.
+
+### Changed
+
+- `TaskDependency::buildDependencyGraph()` extracted from `rescheduleProject()` (task/dependency loading, adjacency maps, Kahn's topological sort and cycle detection) so `CriticalPath` reuses the exact same graph-building and cycle-safety logic instead of duplicating it. `durationSeconds()` made public for the same reason. Behavior-preserving — `rescheduleProject()`'s own tests are unchanged and still pass.
+
+### Fixed
+
+Found while writing the test suite:
+
+- `TaskDependency::rescheduleProject()` called `Toolbox::logError()`, which does not exist in GLPI 11 (`Toolbox` only exposes `logDebug()`/`logInfo()`/`logInFile()`). The cycle-detection safety net would fatal instead of returning the "cascade aborted" error the moment it ever actually caught a cycle. Switched to `Toolbox::logInFile('php-errors', ...)`.
+- `DependencyType` lived inside `TaskDependency.php`, a second class in a file not named after it — violating GLPI 11's strict PSR-4 plugin autoloading. It only worked in production because every access path happened to load `TaskDependency` first; anything autoloading `DependencyType` on its own hit "Class not found". Split into its own `src/DependencyType.php`.
+
 ## [1.0.0]
 
 ### Added

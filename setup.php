@@ -11,7 +11,7 @@
  * @link      https://github.com/giovanny07/projectmanager
  */
 
-define('PLUGIN_PROJECTMANAGER_VERSION',  '1.0.0');
+define('PLUGIN_PROJECTMANAGER_VERSION',  '1.1.0');
 define('PLUGIN_PROJECTMANAGER_MIN_GLPI', '11.0.0');
 define('PLUGIN_PROJECTMANAGER_MAX_GLPI', '12.0.0');
 

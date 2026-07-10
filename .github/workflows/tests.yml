@@ -1,0 +1,96 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# GLPI 11 ships no tests/ or PHPUnit of its own, and boots against a
+# real, installed database (see tests/bootstrap.php) — so this workflow
+# checks out an actual GLPI release, installs its database, activates
+# this plugin against it, then runs the suite for real. There is no
+# lighter-weight way to test a GLPI plugin.
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: glpitest
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v4
+        with:
+          path: plugin
+
+      - name: Checkout GLPI
+        uses: actions/checkout@v4
+        with:
+          repository: glpi-project/glpi
+          ref: '11.0.6'
+          path: glpi
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: bcmath, ctype, curl, dom, fileinfo, filter, gd, hash, iconv, intl, json, libxml, mbstring, mysqli, openssl, session, simplexml, tokenizer, zlib
+          coverage: none
+          tools: composer
+
+      - name: Cache GLPI composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: glpi/vendor
+          key: glpi-11.0.6-php8.3-${{ hashFiles('glpi/composer.lock') }}
+
+      - name: Install GLPI composer dependencies
+        working-directory: glpi
+        run: composer install --no-interaction --no-progress --optimize-autoloader
+
+      - name: Configure and install the GLPI database
+        working-directory: glpi
+        run: |
+          php bin/console database:configure -n \
+            --db-host=127.0.0.1 --db-port=3306 --db-user=root --db-password=root --db-name=glpitest
+          php bin/console database:install -n \
+            --db-host=127.0.0.1 --db-port=3306 --db-user=root --db-password=root --db-name=glpitest \
+            --default-language=en_GB --no-telemetry
+
+      - name: Link the plugin into GLPI's plugin directory
+        run: ln -s "${{ github.workspace }}/plugin" glpi/plugins/projectmanager
+
+      - name: Install plugin composer dependencies (PHPUnit)
+        working-directory: plugin
+        run: composer install --no-interaction --no-progress
+
+      - name: Install and activate the plugin
+        working-directory: glpi
+        run: |
+          php bin/console plugin:install -n projectmanager
+          php bin/console plugin:activate projectmanager
+
+      - name: Run the test suite
+        working-directory: plugin
+        env:
+          GLPI_ROOT: ${{ github.workspace }}/glpi
+        run: vendor/bin/phpunit
+
+      - name: Upload GLPI logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: glpi-logs
+          path: glpi/files/_log/

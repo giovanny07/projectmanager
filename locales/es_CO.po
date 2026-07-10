@@ -23,6 +23,9 @@ msgstr "Configuración"
 msgid "Configuration saved successfully."
 msgstr "Configuración guardada correctamente."
 
+msgid "Planned"
+msgstr "Planificado"
+
 # ── Module names ──────────────────────────────────────────────────────
 msgid "Dependencies module is not enabled."
 msgstr "El módulo de dependencias no está habilitado."

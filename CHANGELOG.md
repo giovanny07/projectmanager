@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.1]
+
+### Added
+
+- `.github/workflows/tests.yml`: GitHub Actions CI running the full PHPUnit suite against a freshly-installed GLPI 11.0.6 on every push/PR — checks out GLPI, builds its JS/CSS bundles and compiles its `.po` files, installs its database, links this plugin in, installs/activates it, then runs the suite for real.
+- `plugin.xml` and `plugin-icon.png`: marketplace-style distribution metadata (name, description in EN/ES, per-version compatibility, tags), modeled on the `credit` plugin's own `plugin.xml`.
+
+### Fixed
+
+- The "Risk Management" card in the config form said "Coming in v1.1.0"; 1.1.0 shipped without it, since Risk Management is a different PMBOK knowledge area than Schedule Management (this plugin's actual scope) with no defined build plan. Swapped for a generic "Planned" badge that doesn't commit to a release it doesn't have.
+
+### Removed
+
+- `module_dashboard` and `module_evm`: config columns that existed in the schema and were sanitized on every save, but had no UI card and nothing ever gated on them — dead scaffolding for modules that were never built. Migrated via `Migration::dropField()` for existing installs.
+
 ## [1.1.0]
 
 ### Added

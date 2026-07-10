@@ -87,8 +87,6 @@ class Config extends CommonDBTM
                 `id`                         int {$sign} NOT NULL,
                 `module_dependencies`        tinyint NOT NULL DEFAULT 0,
                 `module_risks`               tinyint NOT NULL DEFAULT 0,
-                `module_dashboard`           tinyint NOT NULL DEFAULT 0,
-                `module_evm`                 tinyint NOT NULL DEFAULT 0,
                 `cascade_auto`               tinyint NOT NULL DEFAULT 1,
                 `cascade_log`                tinyint NOT NULL DEFAULT 1,
                 `block_unmet_dependencies`   tinyint NOT NULL DEFAULT 0,
@@ -97,16 +95,29 @@ class Config extends CommonDBTM
             ) ENGINE=InnoDB DEFAULT CHARSET={$charset} COLLATE={$collation} ROW_FORMAT=DYNAMIC");
 
             $DB->doQuery("INSERT INTO `{$table}` (id, date_mod) VALUES (1, NOW())");
-        } elseif (!$DB->fieldExists($table, 'block_unmet_dependencies')) {
-            // Migration: existing installs don't have this column yet.
+            return;
+        }
+
+        // Migration: existing installs don't have this column yet.
+        if (!$DB->fieldExists($table, 'block_unmet_dependencies')) {
             $migration->addField(
                 $table,
                 'block_unmet_dependencies',
                 'tinyint',
                 ['value' => 0, 'after' => 'cascade_log']
             );
-            $migration->migrationOneTable($table);
         }
+
+        // Migration: module_dashboard/module_evm were dead columns —
+        // scaffolding for modules that were never built and have no UI.
+        // Drop them rather than leave an unowned promise in the schema.
+        foreach (['module_dashboard', 'module_evm'] as $deadField) {
+            if ($DB->fieldExists($table, $deadField)) {
+                $migration->dropField($table, $deadField);
+            }
+        }
+
+        $migration->migrationOneTable($table);
     }
 
     public static function uninstall(): void

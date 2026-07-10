@@ -50,6 +50,11 @@ jobs:
           coverage: none
           tools: composer
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
       - name: Cache GLPI composer dependencies
         uses: actions/cache@v4
         with:
@@ -59,6 +64,10 @@ jobs:
       - name: Install GLPI composer dependencies
         working-directory: glpi
         run: composer install --no-interaction --no-progress --optimize-autoloader
+
+      - name: Build GLPI's JS/asset dependencies
+        working-directory: glpi
+        run: bin/console dependencies install --composer-options="--ignore-platform-req=php+ --prefer-dist --no-progress"
 
       - name: Configure and install the GLPI database
         working-directory: glpi

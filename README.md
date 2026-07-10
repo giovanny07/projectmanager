@@ -19,20 +19,38 @@ Advanced project scheduling for [GLPI](https://glpi-project.org) 11: task depend
 
 ## Installation
 
-**Recommended — one-line installer** (downloads the latest release into your GLPI plugins directory):
+### Recommended — one-line installer
+
+Downloads the latest release and drops it into your GLPI plugins directory (auto-detected). Requires `curl`, `python3` and `unzip`; uses `sudo` if the plugins directory isn't writable.
 
 ```sh
 curl -fsSL https://imagu-binaries.s3.us-east-1.amazonaws.com/glpi-projectmanager/install.sh | bash
 ```
 
-It auto-detects the GLPI plugins directory; pass `VERSION=vX.Y.Z` to pin a version or
-`PLUGINS_DIR=/path/to/glpi/plugins` for a non-standard layout. See [CICD.md](CICD.md) for all options.
+Options (pass as environment variables before `bash`):
 
-**Manual:** copy (or symlink) this directory into GLPI's plugin directory as `projectmanager`.
+```sh
+# Pin a specific version
+curl -fsSL https://imagu-binaries.s3.us-east-1.amazonaws.com/glpi-projectmanager/install.sh | VERSION=v1.2.0 bash
 
-Then, in either case:
+# Non-standard GLPI location (skip auto-detection)
+curl -fsSL https://imagu-binaries.s3.us-east-1.amazonaws.com/glpi-projectmanager/install.sh | PLUGINS_DIR=/var/www/html/glpi/plugins bash
 
-1. From **Setup > Plugins**, install and activate **Project Manager**.
+# Uninstall (removes the plugin directory)
+curl -fsSL https://imagu-binaries.s3.us-east-1.amazonaws.com/glpi-projectmanager/install.sh | UNINSTALL=true bash
+```
+
+### Manual
+
+Copy (or symlink) this directory into GLPI's plugin directory as `projectmanager`.
+
+### Then, in either case
+
+1. Activate the plugin, via the UI — **Setup > Plugins**, install and activate **Project Manager** — or the CLI:
+   ```sh
+   php <glpi-root>/bin/console glpi:plugin:install --username=glpi projectmanager
+   php <glpi-root>/bin/console glpi:plugin:activate projectmanager
+   ```
 2. Go to **Setup > Plugins > Project Manager > Configure** to enable the Task Dependencies module and adjust cascade/blocking behavior.
 
 Maintainers: see [CICD.md](CICD.md) for the build/release pipeline and the SemVer tagging procedure.

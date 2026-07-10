@@ -55,6 +55,9 @@ jobs:
         with:
           node-version: 'lts/*'
 
+      - name: Install gettext (msgfmt, needed to compile GLPI's own .po files)
+        run: sudo apt-get update && sudo apt-get install -y gettext
+
       - name: Cache GLPI composer dependencies
         uses: actions/cache@v4
         with:

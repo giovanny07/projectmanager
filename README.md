@@ -32,6 +32,17 @@ All settings live under **Setup > General > Project Manager**:
 | Log cascade changes in GLPI history | on | Record each cascade-driven date change in the task's history log. |
 | Block tasks with unmet dependencies | off | Enforce FS/SS/FF/SF dependencies instead of only warning. |
 
+## Testing
+
+The GLPI 11 release build ships neither `tests/` nor PHPUnit, so this plugin brings its own:
+
+```sh
+composer install
+GLPI_ROOT=/path/to/glpi vendor/bin/phpunit
+```
+
+Tests boot the real GLPI Kernel and run against the real database (the same one GLPI itself uses), so run them as the webserver user (e.g. `sudo -u apache`) — GLPI writes to its own log directory on boot regardless of who's running it. Each test creates its own throwaway Project/ProjectTasks and cleans them up in `tearDown()`.
+
 ## Coexisting with other plugins
 
 This plugin does not ship its own Gantt visualization — GLPI core dropped its bundled Gantt view in 10.0.1 (AGPL/GPL license conflict), and visualization today comes from separately-installed plugins such as TECLIB's `gantt`. Project Manager is designed to coexist with it: both add their own tabs on `Project`/`ProjectTask` without conflict.
